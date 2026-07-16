@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estética Cristina Blanco · Oropesa de Toledo</title>
+<meta name="description" content="Centro de estética en Oropesa de Toledo. Dermoestética, estética avanzada con Tactum Pro, análisis de piel, maquillaje, uñas y depilación láser. Trato cálido y cercano.">
+<meta name="theme-color" content="#7A5C4A">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Estética Cristina Blanco">
+<meta property="og:description" content="Centro de estética en Oropesa de Toledo · Cálido y cercano">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237A5C4A'/%3E%3Ctext x='16' y='22' font-family='Playfair Display,serif' font-size='18' fill='%23FDFAF7' text-anchor='middle'%3ECB%3C/text%3E%3C/svg%3E">
+
+<style>
+  :root{
+    --crema:#F7F3EE;
+    --rosa:#E8D5C8;
+    --tierra:#7A5C4A;
+    --marron:#4A3328;
+    --blanco:#FDFAF7;
+    --rosa-suave:#F3E7DE;
+    --sombra:0 10px 40px rgba(74,51,40,.10);
+    --sombra-fuerte:0 20px 60px rgba(74,51,40,.18);
+    --radio:22px;
+    --transicion:.35s cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Lato',system-ui,sans-serif;
+    color:var(--marron);
+    background:var(--blanco);
+    line-height:1.7;
+    font-weight:300;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Playfair Display',Georgia,serif;font-weight:600;line-height:1.15;color:var(--marron)}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  section{position:relative}
+
+  .contenedor{width:min(1180px,92%);margin-inline:auto}
+  .etiqueta{
+    display:inline-block;
+    font-size:.78rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--tierra);
+    font-weight:700;
+    margin-bottom:1rem;
+  }
+
+  /* ---------- Botones ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:.5em;
+    font-family:'Lato',sans-serif;font-weight:700;
+    font-size:.95rem;letter-spacing:.02em;
+    padding:.95em 1.9em;border-radius:100px;border:none;cursor:pointer;
+    transition:var(--transicion);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn-primario{background:var(--tierra);color:var(--blanco);box-shadow:0 8px 24px rgba(122,92,74,.35)}
+  .btn-primario:hover{background:var(--marron);transform:translateY(-2px);box-shadow:0 12px 30px rgba(74,51,40,.4)}
+  .btn-fantasma{background:transparent;color:var(--marron);border:1.5px solid var(--tierra)}
+  .btn-fantasma:hover{background:var(--tierra);color:var(--blanco)}
+  .btn-texto{background:none;border:none;color:var(--tierra);font-weight:700;cursor:pointer;padding:0;font-family:'Lato',sans-serif}
+
+  /* ---------- Navegación ---------- */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    padding:1.1rem 0;
+    transition:var(--transicion);
+  }
+  header.nav.compacta{background:rgba(253,250,247,.92);backdrop-filter:blur(14px);box-shadow:0 2px 24px rgba(74,51,40,.08);padding:.75rem 0}
+  .nav-fila{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:600;letter-spacing:.01em;display:flex;flex-direction:column;line-height:1.05}
+  .logo small{font-family:'Lato',sans-serif;font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;font-weight:400;color:var(--tierra)}
+  .nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+  .nav-links a{font-size:.95rem;position:relative;font-weight:400}
+  .nav-links a::after{content:'';position:absolute;left:0;bottom:-4px;width:0;height:1.5px;background:var(--tierra);transition:var(--transicion)}
+  .nav-links a:hover::after{width:100%}
+  .hamburguesa{display:none;background:none;border:none;cursor:pointer;width:30px;height:24px;position:relative;z-index:120}
+  .hamburguesa span{position:absolute;left:0;height:2.5px;width:100%;background:var(--marron);border-radius:2px;transition:var(--transicion)}
+  .hamburguesa span:nth-child(1){top:0}
+  .hamburguesa span:nth-child(2){top:50%;transform:translateY(-50%)}
+  .hamburguesa span:nth-child(3){bottom:0}
+  .hamburguesa.abierta span:nth-child(1){top:50%;transform:translateY(-50%) rotate(45deg)}
+  .hamburguesa.abierta span:nth-child(2){opacity:0}
+  .hamburguesa.abierta span:nth-child(3){bottom:auto;top:50%;transform:translateY(-50%) rotate(-45deg)}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    min-height:100vh;display:flex;align-items:center;
+    padding:8rem 0 4rem;
+    background:
+      radial-gradient(120% 90% at 80% 10%, var(--rosa-suave) 0%, transparent 55%),
+      linear-gradient(160deg, var(--crema) 0%, var(--blanco) 100%);
+  }
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:4rem;align-items:center}
+  .hero-txt h1{font-size:clamp(2.6rem,5.5vw,4.4rem);margin-bottom:.4rem}
+  .hero-txt h1 em{font-style:italic;color:var(--tierra)}
+  .firma{width:230px;max-width:60%;height:auto;margin:.2rem 0 1.6rem;color:var(--tierra)}
+  .hero-txt p.lede{font-size:1.18rem;max-width:34ch;margin-bottom:2rem;color:#6b5647}
+  .hero-cta{display:flex;gap:1rem;flex-wrap:wrap}
+  .hero-visual{position:relative}
+  .hero-marco{
+    border-radius:200px 200px var(--radio) var(--radio);
+    overflow:hidden;box-shadow:var(--sombra-fuerte);
+    aspect-ratio:4/5;
+  }
+  .hero-badge{
+    position:absolute;bottom:-22px;left:-22px;
+    background:var(--blanco);border-radius:20px;padding:1rem 1.4rem;
+    box-shadow:var(--sombra);display:flex;align-items:center;gap:.8rem;
+  }
+  .hero-badge .estrella{color:var(--tierra);font-size:1.4rem}
+  .hero-badge b{font-family:'Playfair Display',serif;font-size:1.15rem;display:block}
+  .hero-badge span{font-size:.78rem;color:var(--tierra)}
+
+  /* ---------- Barra estadísticas ---------- */
+  .stats{background:var(--tierra);color:var(--blanco);padding:2.6rem 0}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center}
+  .stat b{font-family:'Playfair Display',serif;font-size:2.4rem;display:block;color:var(--blanco)}
+  .stat span{font-size:.85rem;letter-spacing:.06em;opacity:.85}
+  .stat+.stat{border-left:1px solid rgba(253,250,247,.18)}
+
+  /* ---------- Secciones genéricas ---------- */
+  .seccion{padding:6.5rem 0}
+  .seccion-cabecera{text-align:center;max-width:640px;margin:0 auto 3.5rem}
+  .seccion-cabecera h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem}
+  .seccion-cabecera p{color:#6b5647;font-size:1.08rem}
+
+  /* ---------- Tactum Pro ---------- */
+  .tactum{background:linear-gradient(150deg,var(--rosa-suave),var(--crema))}
+  .tactum-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:4rem;align-items:center}
+  .tactum-visual{border-radius:var(--radio);overflow:hidden;box-shadow:var(--sombra);aspect-ratio:1/1}
+  .tactum-txt .etiqueta{color:var(--tierra)}
+  .tactum-txt h2{font-size:clamp(2rem,4vw,2.9rem);margin-bottom:1.2rem}
+  .tactum-lista{list-style:none;margin-top:1.6rem;display:grid;gap:1rem}
+  .tactum-lista li{display:flex;gap:.9rem;align-items:flex-start}
+  .tactum-lista .punto{flex:none;width:26px;height:26px;border-radius:50%;background:var(--tierra);color:var(--blanco);display:grid;place-items:center;font-size:.8rem;margin-top:.15rem}
+  .tactum-lista b{font-weight:700;color:var(--marron)}
+
+  /* ---------- Servicios ---------- */
+  .servicios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.8rem}
+  .servicio{
+    background:var(--blanco);border:1px solid var(--rosa);border-radius:var(--radio);
+    padding:2.2rem 1.9rem;transition:var(--transicion);position:relative;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .servicio::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,var(--rosa-suave),transparent);opacity:0;transition:var(--transicion)}
+  .servicio:hover{transform:translateY(-6px);box-shadow:var(--sombra);border-color:transparent}
+  .servicio:hover::before{opacity:1}
+  .servicio>*{position:relative;z-index:1}
+  .servicio-icono{width:56px;height:56px;border-radius:16px;background:var(--rosa-suave);display:grid;place-items:center;margin-bottom:1.3rem;color:var(--tierra)}
+  .servicio-icono svg{width:28px;height:28px}
+  .servicio h3{font-size:1.35rem;margin-bottom:.6rem}
+  .servicio p{font-size:.98rem;color:#6b5647;margin-bottom:1.4rem;flex:1}
+  .servicio .btn-texto{align-self:flex-start}
+  .servicio .btn-texto::after{content:'→';margin-left:.4em;transition:var(--transicion);display:inline-block}
+  .servicio:hover .btn-texto::after{transform:translateX(4px)}
+
+  /* ---------- Sobre mí ---------- */
+  .sobre{background:var(--crema)}
+  .sobre-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:4rem;align-items:center}
+  .sobre-visual{position:relative}
+  .sobre-visual .marco{border-radius:var(--radio) var(--radio) 160px 160px;overflow:hidden;box-shadow:var(--sombra);aspect-ratio:4/5}
+  .sobre-txt h2{font-size:clamp(2rem,4vw,2.9rem);margin-bottom:1.2rem}
+  .sobre-txt p{color:#5f4c3f;margin-bottom:1.1rem}
+  .sobre-firma{font-family:'Playfair Display',serif;font-style:italic;font-size:1.6rem;color:var(--tierra);margin-top:1rem}
+
+  /* ---------- Galería ---------- */
+  .galeria-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:220px;gap:1.1rem}
+  .galeria-item{border-radius:18px;overflow:hidden;position:relative;box-shadow:var(--sombra)}
+  .galeria-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+  .galeria-item:hover img{transform:scale(1.06)}
+  .galeria-item .cap{position:absolute;left:0;right:0;bottom:0;padding:1rem;background:linear-gradient(transparent,rgba(74,51,40,.75));color:var(--blanco);font-family:'Playfair Display',serif;font-size:1.05rem;opacity:0;transform:translateY(8px);transition:var(--transicion)}
+  .galeria-item:hover .cap{opacity:1;transform:none}
+  .galeria-item.ancho{grid-column:span 2}
+  .galeria-item.alto{grid-row:span 2}
+
+  /* ---------- Contacto ---------- */
+  .contacto{background:var(--marron);color:var(--blanco)}
+  .contacto h2,.contacto h3{color:var(--blanco)}
+  .contacto-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+  .contacto .etiqueta{color:var(--rosa)}
+  .contacto-info p{opacity:.85;margin-bottom:2rem;max-width:36ch}
+  .info-item{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.5rem}
+  .info-item .ico{flex:none;width:44px;height:44px;border-radius:12px;background:rgba(253,250,247,.1);display:grid;place-items:center;color:var(--rosa)}
+  .info-item b{display:block;font-family:'Playfair Display',serif;font-size:1.05rem}
+  .info-item span{opacity:.8;font-size:.95rem}
+  .form-card{background:var(--blanco);border-radius:var(--radio);padding:2.4rem;color:var(--marron);box-shadow:var(--sombra-fuerte)}
+  .campo{margin-bottom:1.2rem}
+  .campo label{display:block;font-size:.85rem;font-weight:700;margin-bottom:.4rem;color:var(--tierra)}
+  .campo input,.campo select,.campo textarea{
+    width:100%;padding:.85rem 1rem;border:1.5px solid var(--rosa);border-radius:12px;
+    font-family:'Lato',sans-serif;font-size:1rem;color:var(--marron);background:var(--crema);
+    transition:var(--transicion);
+  }
+  .campo input:focus,.campo select:focus,.campo textarea:focus{outline:none;border-color:var(--tierra);background:var(--blanco)}
+  .campo textarea{resize:vertical;min-height:100px}
+  .form-ok{display:none;background:var(--rosa-suave);border-radius:12px;padding:1rem;text-align:center;color:var(--tierra);font-weight:700;margin-top:1rem}
+  .form-ok.visible{display:block}
+
+  /* ---------- Footer ---------- */
+  footer.pie{background:#3a271e;color:var(--blanco);padding:3.5rem 0 2rem}
+  .pie-grid{display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;align-items:flex-start}
+  .pie .logo{color:var(--blanco)}
+  .pie a{opacity:.8;transition:var(--transicion)}
+  .pie a:hover{opacity:1}
+  .pie-social{display:flex;gap:1rem;margin-top:1rem}
+  .pie-social a{width:40px;height:40px;border-radius:50%;background:rgba(253,250,247,.1);display:grid;place-items:center}
+  .pie-social a:hover{background:var(--tierra)}
+  .pie-links{list-style:none;display:grid;gap:.7rem}
+  .pie-bottom{border-top:1px solid rgba(253,250,247,.12);margin-top:2.5rem;padding-top:1.5rem;text-align:center;font-size:.85rem;opacity:.7}
+
+  /* ---------- Modal reserva ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(58,39,30,.55);backdrop-filter:blur(4px);
+    z-index:200;display:none;align-items:center;justify-content:center;padding:1.2rem;opacity:0;transition:opacity .3s ease;
+  }
+  .modal-overlay.abierto{display:flex;opacity:1}
+  .modal{
+    background:var(--blanco);border-radius:var(--radio);width:min(480px,100%);max-height:92vh;overflow-y:auto;
+    padding:2.4rem;box-shadow:var(--sombra-fuerte);transform:translateY(18px) scale(.98);transition:var(--transicion);
+  }
+  .modal-overlay.abierto .modal{transform:none}
+  .modal-cerrar{position:absolute;top:1rem;right:1rem}
+  .modal-cabecera{text-align:center;margin-bottom:1.8rem;position:relative}
+  .modal-cabecera .etiqueta{margin-bottom:.5rem}
+  .modal-cabecera h3{font-size:1.7rem}
+  .modal-cabecera p{font-size:.95rem;color:#6b5647;margin-top:.4rem}
+  .modal .btn-cerrar-x{position:absolute;top:-1rem;right:-1rem;width:40px;height:40px;border-radius:50%;border:none;background:var(--crema);cursor:pointer;font-size:1.3rem;color:var(--tierra);line-height:1}
+  .modal-ok{text-align:center;padding:1rem 0}
+  .modal-ok .check{width:64px;height:64px;border-radius:50%;background:var(--rosa-suave);color:var(--tierra);display:grid;place-items:center;margin:0 auto 1.2rem;font-size:2rem}
+
+  .no-scroll{overflow:hidden}
+
+  /* ---------- Animaciones al hacer scroll ---------- */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.visible{opacity:1;transform:none}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:960px){
+    .hero-grid,.tactum-grid,.sobre-grid,.contacto-grid{grid-template-columns:1fr;gap:2.5rem}
+    .hero-visual{order:-1;max-width:420px;margin-inline:auto}
+    .tactum-visual,.sobre-visual{max-width:440px;margin-inline:auto}
+    .servicios-grid{grid-template-columns:repeat(2,1fr)}
+    .stats-grid{grid-template-columns:repeat(2,1fr);gap:2rem}
+    .stat:nth-child(3){border-left:none}
+    .galeria-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:200px}
+    .galeria-item.ancho{grid-column:span 2}
+    .galeria-item.alto{grid-row:span 1}
+  }
+  @media(max-width:640px){
+    .nav-links{
+      position:fixed;inset:0;background:var(--crema);flex-direction:column;justify-content:center;
+      gap:2.2rem;transform:translateX(100%);transition:var(--transicion);
+    }
+    .nav-links.abierto{transform:none}
+    .nav-links a{font-size:1.4rem;font-family:'Playfair Display',serif}
+    .nav-links .btn{font-family:'Lato',sans-serif;font-size:1rem}
+    .hamburguesa{display:block}
+    .seccion{padding:4.5rem 0}
+    .hero{padding:7rem 0 3rem}
+    .servicios-grid{grid-template-columns:1fr}
+    .stat+.stat{border-left:none}
+    .stat b{font-size:2rem}
+    .pie-grid{flex-direction:column}
+  }
+  @media(max-width:400px){
+    .contenedor{width:90%}
+    .hero-txt h1{font-size:2.3rem}
+    .modal,.form-card{padding:1.6rem}
+    .stats-grid{grid-template-columns:1fr;gap:1.2rem}
+    .stat+.stat{border-top:1px solid rgba(253,250,247,.18);padding-top:1.2rem}
+    .hero-badge{left:0;bottom:-16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="contenedor nav-fila">
+    <a href="#inicio" class="logo">Cristina Blanco<small>Estética · Oropesa</small></a>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#tactum">Tecnología</a></li>
+        <li><a href="#servicios">Servicios</a></li>
+        <li><a href="#sobre">Sobre mí</a></li>
+        <li><a href="#galeria">Galería</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+        <li><button class="btn btn-primario" data-reservar>Reservar cita</button></li>
+      </ul>
+    </nav>
+    <button class="hamburguesa" id="hamburguesa" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="inicio">
+  <div class="contenedor hero-grid">
+    <div class="hero-txt">
+      <span class="etiqueta">Centro de estética · Oropesa de Toledo</span>
+      <h1>Tu piel, <em>cuidada</em><br>como se merece</h1>
+      <!-- Firma / trazo curvo dibujado a mano -->
+      <svg class="firma" viewBox="0 0 260 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M6 42 C 40 12, 78 8, 120 30 C 150 46, 175 20, 210 26 C 235 30, 248 40, 254 46"
+              stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M188 34 C 196 26, 206 30, 210 40" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <p class="lede">Dermoestética, estética avanzada y un trato cercano. Realza tu belleza natural en un espacio pensado para ti.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primario" data-reservar>Reservar cita</button>
+        <a href="#servicios" class="btn btn-fantasma">Ver servicios</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-marco" id="img-hero"></div>
+      <div class="hero-badge">
+        <span class="estrella">★</span>
+        <div><b>Trato cercano</b><span>Público mixto · particulares</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="stats">
+  <div class="contenedor stats-grid">
+    <div class="stat"><b>6+</b><span>Servicios especializados</span></div>
+    <div class="stat"><b>Tactum Pro</b><span>Tecnología avanzada</span></div>
+    <div class="stat"><b>100%</b><span>Piel analizada a medida</span></div>
+    <div class="stat"><b>★★★★★</b><span>Trato cálido y cercano</span></div>
+  </div>
+</section>
+
+<!-- ============ TACTUM PRO ============ -->
+<section class="seccion tactum" id="tactum">
+  <div class="contenedor tactum-grid">
+    <div class="tactum-visual reveal" id="img-tactum"></div>
+    <div class="tactum-txt reveal">
+      <span class="etiqueta">Estética avanzada</span>
+      <h2>Tecnología Tactum&nbsp;Pro</h2>
+      <p>Incorporamos el aparato <b>Tactum Pro</b> para ofrecer tratamientos de estética avanzada con resultados visibles y seguros, adaptados a las necesidades reales de tu piel.</p>
+      <ul class="tactum-lista">
+        <li><span class="punto">✓</span><div><b>Radiofrecuencia y remodelación</b> — firmeza y tono para el rostro y el cuerpo.</div></li>
+        <li><span class="punto">✓</span><div><b>Tratamientos personalizados</b> — cada sesión se ajusta tras un análisis previo de tu piel.</div></li>
+        <li><span class="punto">✓</span><div><b>No invasivo</b> — cuidado profesional sin cirugía y sin tiempos de recuperación.</div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICIOS ============ -->
+<section class="seccion" id="servicios">
+  <div class="seccion-cabecera reveal">
+    <span class="etiqueta">Lo que hacemos</span>
+    <h2>Servicios</h2>
+    <p>Cuidado integral de tu piel y tu imagen, con técnicas profesionales y cercanía en cada detalle.</p>
+  </div>
+  <div class="contenedor servicios-grid">
+
+    <article class="servicio reveal">
+      <div class="servicio-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 4-6 6-6 10a6 6 0 0012 0c0-4-3-6-6-10z"/></svg>
+      </div>
+      <h3>Dermoestética</h3>
+      <p>Tratamientos faciales y corporales para el cuidado profundo y la salud de tu piel.</p>
+      <button class="btn-texto" data-reservar data-servicio="Dermoestética">Reservar</button>
+    </article>
+
+    <article class="servicio reveal">
+      <div class="servicio-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+      </div>
+      <h3>Estética avanzada</h3>
+      <p>Sesiones con aparato Tactum Pro para resultados visibles de firmeza y remodelación.</p>
+      <button class="btn-texto" data-reservar data-servicio="Estética avanzada (Tactum Pro)">Reservar</button>
+    </article>
+
+    <article class="servicio reveal">
+      <div class="servicio-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      </div>
+      <h3>Análisis de piel</h3>
+      <p>Estudio personalizado para diseñar el tratamiento que tu piel realmente necesita.</p>
+      <button class="btn-texto" data-reservar data-servicio="Análisis de piel">Reservar</button>
+    </article>
+
+    <article class="servicio reveal">
+      <div class="servicio-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l3-8 9-9a2.8 2.8 0 014 4l-9 9-8 3z"/><path d="M14 6l4 4"/></svg>
+      </div>
+      <h3>Maquillaje</h3>
+      <p>Make up profesional para eventos, celebraciones o simplemente para brillar cada día.</p>
+      <button class="btn-texto" data-reservar data-servicio="Maquillaje">Reservar</button>
+    </article>
+
+    <article class="servicio reveal">
+      <div class="servicio-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c1.5 2 1.5 5 0 8s-1.5 6 0 8"/><path d="M9 4h6a2 2 0 012 2v12a2 2 0 01-2 2H9"/></svg>
+      </div>
+      <h3>Uñas</h3>
+      <p>Manicura y pedicura cuidadas al detalle, con acabados que duran y se sienten bien.</p>
+      <button class="btn-texto" data-reservar data-servicio="Uñas (manicura/pedicura)">Reservar</button>
+    </article>
+
+    <article class="servicio reveal">
+      <div class="servicio-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 8l3 3M12 8l-3 3"/><circle cx="12" cy="16" r="5"/></svg>
+      </div>
+      <h3>Depilación láser</h3>
+      <p>Elimina el vello de forma duradera con un método seguro, eficaz y cómodo.</p>
+      <button class="btn-texto" data-reservar data-servicio="Depilación láser">Reservar</button>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============ SOBRE MÍ ============ -->
+<section class="seccion sobre" id="sobre">
+  <div class="contenedor sobre-grid">
+    <div class="sobre-visual reveal">
+      <div class="marco" id="img-sobre"></div>
+    </div>
+    <div class="sobre-txt reveal">
+      <span class="etiqueta">Sobre mí</span>
+      <h2>Hola, soy Cristina</h2>
+      <p>Detrás de este centro hay una vocación: cuidar de las personas y ayudarlas a sentirse bien con su piel y consigo mismas. En mi centro de la calle Hospital, en Oropesa de Toledo, cada persona recibe un trato cercano y personalizado.</p>
+      <p>Combino técnicas de dermoestética y estética avanzada con la tecnología Tactum Pro, siempre partiendo de un análisis real de tu piel para recomendarte lo que de verdad necesitas.</p>
+      <p>Aquí no hay dos tratamientos iguales, porque no hay dos pieles iguales. Te espero.</p>
+      <div class="sobre-firma">Cristina Blanco</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALERÍA ============ -->
+<section class="seccion" id="galeria">
+  <div class="seccion-cabecera reveal">
+    <span class="etiqueta">Nuestro espacio</span>
+    <h2>Galería</h2>
+    <p>Un vistazo al centro y a algunos de nuestros tratamientos.</p>
+  </div>
+  <div class="contenedor galeria-grid">
+    <div class="galeria-item ancho alto reveal" data-img="centro"><div class="cap">El centro</div></div>
+    <div class="galeria-item reveal" data-img="facial"><div class="cap">Facial</div></div>
+    <div class="galeria-item reveal" data-img="laser"><div class="cap">Depilación láser</div></div>
+    <div class="galeria-item reveal" data-img="unas"><div class="cap">Uñas</div></div>
+    <div class="galeria-item reveal" data-img="makeup"><div class="cap">Make up</div></div>
+  </div>
+</section>
+
+<!-- ============ CONTACTO ============ -->
+<section class="seccion contacto" id="contacto">
+  <div class="contenedor contacto-grid">
+    <div class="contacto-info reveal">
+      <span class="etiqueta">Hablemos</span>
+      <h2>Reserva tu cita</h2>
+      <p>Escríbeme o pásate por el centro. Estaré encantada de asesorarte y encontrar el tratamiento perfecto para ti.</p>
+
+      <div class="info-item">
+        <div class="ico"><svg viewBox="0 0 24 24" width="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+        <div><b>Dirección</b><span>C/ Hospital · Oropesa de Toledo</span></div>
+      </div>
+      <div class="info-item">
+        <div class="ico"><svg viewBox="0 0 24 24" width="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5c0 9 6 15 15 15a2 2 0 002-2v-2.5a1 1 0 00-.8-1l-3.6-.7a1 1 0 00-1 .4l-1 1.3a12 12 0 01-5.8-5.8l1.3-1a1 1 0 00.4-1l-.7-3.6a1 1 0 00-1-.8H6a2 2 0 00-2 2z"/></svg></div>
+        <div><b>Teléfono</b><span>Consúltalo por Instagram · pendiente de confirmar</span></div>
+      </div>
+      <div class="info-item">
+        <div class="ico"><svg viewBox="0 0 24 24" width="20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+        <div><b>Instagram</b><span><a href="https://instagram.com/esteticacristinablanco" target="_blank" rel="noopener">@esteticacristinablanco</a></span></div>
+      </div>
+    </div>
+
+    <div class="form-card reveal">
+      <form id="formContacto">
+        <div class="campo">
+          <label for="c-nombre">Nombre</label>
+          <input type="text" id="c-nombre" name="nombre" placeholder="Tu nombre" required>
+        </div>
+        <div class="campo">
+          <label for="c-tel">Teléfono</label>
+          <input type="tel" id="c-tel" name="telefono" placeholder="Para poder llamarte" required>
+        </div>
+        <div class="campo">
+          <label for="c-servicio">Servicio de interés</label>
+          <select id="c-servicio" name="servicio">
+            <option>Dermoestética</option>
+            <option>Estética avanzada (Tactum Pro)</option>
+            <option>Análisis de piel</option>
+            <option>Maquillaje</option>
+            <option>Uñas (manicura/pedicura)</option>
+            <option>Depilación láser</option>
+            <option>Otro / no lo sé</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="c-mensaje">Mensaje</label>
+          <textarea id="c-mensaje" name="mensaje" placeholder="Cuéntame qué necesitas..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primario" style="width:100%;justify-content:center">Enviar solicitud</button>
+        <div class="form-ok" id="formOk">¡Gracias! Tu solicitud se ha registrado. Te contactaré lo antes posible. 💛</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie-grid">
+      <div>
+        <div class="logo">Cristina Blanco<small>Estética · Oropesa</small></div>
+        <div class="pie-social">
+          <a href="https://instagram.com/esteticacristinablanco" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+      <ul class="pie-links">
+        <li><a href="#tactum">Tecnología Tactum Pro</a></li>
+        <li><a href="#servicios">Servicios</a></li>
+        <li><a href="#sobre">Sobre mí</a></li>
+        <li><a href="#galeria">Galería</a></li>
+      </ul>
+      <ul class="pie-links">
+        <li><b style="font-family:'Playfair Display',serif">Dónde estamos</b></li>
+        <li>C/ Hospital</li>
+        <li>Oropesa de Toledo</li>
+        <li><button class="btn btn-fantasma" style="border-color:rgba(253,250,247,.4);color:#FDFAF7;margin-top:.5rem" data-reservar>Reservar cita</button></li>
+      </ul>
+    </div>
+    <div class="pie-bottom">© <span id="anio"></span> Estética Cristina Blanco · Oropesa de Toledo · Hecho con cariño</div>
+  </div>
+</footer>
+
+<!-- ============ MODAL RESERVA ============ -->
+<div class="modal-overlay" id="modalReserva">
+  <div class="modal">
+    <div class="modal-cabecera">
+      <button class="btn-cerrar-x" id="cerrarModal" aria-label="Cerrar">×</button>
+      <span class="etiqueta">Reserva de cita</span>
+      <h3>Pide tu cita</h3>
+      <p>Rellena tus datos y me pondré en contacto contigo para confirmar día y hora.</p>
+    </div>
+    <form id="formReserva">
+      <div class="campo">
+        <label for="r-nombre">Nombre</label>
+        <input type="text" id="r-nombre" name="nombre" placeholder="Tu nombre" required>
+      </div>
+      <div class="campo">
+        <label for="r-tel">Teléfono</label>
+        <input type="tel" id="r-tel" name="telefono" placeholder="Para confirmar tu cita" required>
+      </div>
+      <div class="campo">
+        <label for="r-servicio">Tratamiento</label>
+        <select id="r-servicio" name="servicio">
+          <option>Dermoestética</option>
+          <option>Estética avanzada (Tactum Pro)</option>
+          <option>Análisis de piel</option>
+          <option>Maquillaje</option>
+          <option>Uñas (manicura/pedicura)</option>
+          <option>Depilación láser</option>
+          <option>Otro / no lo sé</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="r-fecha">Día preferido (opcional)</label>
+        <input type="date" id="r-fecha" name="fecha">
+      </div>
+      <button type="submit" class="btn btn-primario" style="width:100%;justify-content:center">Solicitar cita</button>
+    </form>
+    <div class="modal-ok" id="modalOk" style="display:none">
+      <div class="check">✓</div>
+      <h3>¡Cita solicitada!</h3>
+      <p style="color:#6b5647;margin-top:.5rem">Gracias, <span id="okNombre">de nuevo</span>. Me pondré en contacto contigo muy pronto para confirmar.</p>
+      <button class="btn btn-fantasma" id="cerrarOk" style="margin-top:1.4rem">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Imágenes ilustradas (SVG en degradados cálidos, autocontenidas) ---------- */
+/* Placeholders artísticos: sustituir por fotos reales del centro cuando estén disponibles. */
+(function(){
+  const P={crema:'#F7F3EE',rosa:'#E8D5C8',tierra:'#7A5C4A',marron:'#4A3328',blanco:'#FDFAF7',rosaSuave:'#F3E7DE'};
+  function svg(w,h,inner,g1,g2){
+    return "url(\"data:image/svg+xml,"+encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>`+
+      `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>`+
+      `<stop offset='0' stop-color='${g1}'/><stop offset='1' stop-color='${g2}'/></linearGradient></defs>`+
+      `<rect width='${w}' height='${h}' fill='url(#g)'/>${inner}</svg>`)+"\")";
+  }
+  const bloom=(cx,cy,r,c,o)=>`<circle cx='${cx}' cy='${cy}' r='${r}' fill='${c}' opacity='${o}'/>`;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.style.background=val,el.style.backgroundSize='cover';};
+
+  set('img-hero', svg(640,800,
+    bloom(480,180,220,P.rosa,.55)+bloom(120,640,260,P.crema,.5)+bloom(520,620,120,P.tierra,.25)+
+    `<path d='M0 560 Q160 480 320 560 T640 540 V800 H0 Z' fill='${P.tierra}' opacity='.18'/>`,
+    P.rosaSuave,P.rosa));
+
+  set('img-tactum', svg(600,600,
+    bloom(300,300,180,P.blanco,.5)+bloom(140,160,120,P.rosa,.5)+bloom(470,470,140,P.tierra,.28)+
+    `<circle cx='300' cy='300' r='90' fill='none' stroke='${P.tierra}' stroke-width='6' opacity='.5'/>`+
+    `<circle cx='300' cy='300' r='40' fill='${P.tierra}' opacity='.35'/>`,
+    P.crema,P.rosaSuave));
+
+  set('img-sobre', svg(560,700,
+    bloom(400,220,200,P.rosa,.5)+bloom(120,560,220,P.crema,.55)+
+    `<circle cx='280' cy='300' r='110' fill='${P.blanco}' opacity='.5'/>`+
+    `<path d='M0 500 Q140 430 280 500 T560 490 V700 H0 Z' fill='${P.tierra}' opacity='.2'/>`,
+    P.rosaSuave,P.rosa));
+
+  const galeria={
+    centro: svg(560,560, bloom(420,140,180,P.rosa,.5)+bloom(120,460,200,P.crema,.6)+`<rect x='120' y='260' width='320' height='180' rx='16' fill='${P.tierra}' opacity='.22'/>`, P.crema,P.rosaSuave),
+    facial: svg(320,320, bloom(220,110,120,P.blanco,.55)+bloom(80,240,120,P.rosa,.5)+`<circle cx='160' cy='150' r='60' fill='${P.tierra}' opacity='.25'/>`, P.rosaSuave,P.rosa),
+    laser:  svg(320,320, bloom(160,160,120,P.blanco,.4)+`<path d='M160 40 L160 200 M120 160 L160 200 L200 160' stroke='${P.tierra}' stroke-width='7' fill='none' opacity='.5' stroke-linecap='round'/><circle cx='160' cy='240' r='50' fill='${P.tierra}' opacity='.25'/>`, P.crema,P.rosa),
+    unas:   svg(320,320, bloom(90,110,120,P.rosa,.55)+bloom(240,240,120,P.crema,.5)+`<rect x='120' y='120' width='80' height='120' rx='40' fill='${P.tierra}' opacity='.28'/>`, P.rosaSuave,P.crema),
+    makeup: svg(320,320, bloom(230,110,130,P.rosa,.5)+bloom(90,250,120,P.blanco,.5)+`<rect x='130' y='90' width='60' height='150' rx='14' fill='${P.tierra}' opacity='.3'/><circle cx='160' cy='90' r='22' fill='${P.marron}' opacity='.35'/>`, P.crema,P.rosaSuave)
+  };
+  document.querySelectorAll('.galeria-item[data-img]').forEach(el=>{
+    const k=el.getAttribute('data-img');
+    if(galeria[k]){el.style.background=galeria[k];el.style.backgroundSize='cover';}
+  });
+})();
+
+/* ---------- Nav: fondo al hacer scroll ---------- */
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('compacta',scrollY>40));
+
+/* ---------- Menú hamburguesa ---------- */
+const hb=document.getElementById('hamburguesa');
+const navLinks=document.getElementById('navLinks');
+function cerrarMenu(){hb.classList.remove('abierta');navLinks.classList.remove('abierto');document.body.classList.remove('no-scroll');}
+hb.addEventListener('click',()=>{
+  const abrir=!navLinks.classList.contains('abierto');
+  hb.classList.toggle('abierta',abrir);
+  navLinks.classList.toggle('abierto',abrir);
+  document.body.classList.toggle('no-scroll',abrir);
+});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',cerrarMenu));
+
+/* ---------- Modal de reserva ---------- */
+const modal=document.getElementById('modalReserva');
+const formReserva=document.getElementById('formReserva');
+const modalOk=document.getElementById('modalOk');
+const selReserva=document.getElementById('r-servicio');
+
+function abrirModal(servicio){
+  if(servicio){
+    for(const op of selReserva.options){ if(op.value===servicio){selReserva.value=servicio;break;} }
+  }
+  formReserva.style.display='';
+  modalOk.style.display='none';
+  modal.classList.add('abierto');
+  document.body.classList.add('no-scroll');
+}
+function cerrarModal(){modal.classList.remove('abierto');document.body.classList.remove('no-scroll');}
+
+document.querySelectorAll('[data-reservar]').forEach(btn=>{
+  btn.addEventListener('click',()=>{cerrarMenu();abrirModal(btn.getAttribute('data-servicio'));});
+});
+document.getElementById('cerrarModal').addEventListener('click',cerrarModal);
+document.getElementById('cerrarOk').addEventListener('click',cerrarModal);
+modal.addEventListener('click',e=>{if(e.target===modal)cerrarModal();});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('abierto'))cerrarModal();});
+
+formReserva.addEventListener('submit',e=>{
+  e.preventDefault();
+  document.getElementById('okNombre').textContent=document.getElementById('r-nombre').value||'de nuevo';
+  formReserva.style.display='none';
+  modalOk.style.display='block';
+  formReserva.reset();
+});
+
+/* ---------- Formulario de contacto ---------- */
+const formContacto=document.getElementById('formContacto');
+formContacto.addEventListener('submit',e=>{
+  e.preventDefault();
+  document.getElementById('formOk').classList.add('visible');
+  formContacto.reset();
+});
+
+/* ---------- Reveal al hacer scroll ---------- */
+const io=new IntersectionObserver(ents=>{
+  ents.forEach(en=>{if(en.isIntersecting){en.target.classList.add('visible');io.unobserve(en.target);}});
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ---------- Año en el footer ---------- */
+document.getElementById('anio').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>
