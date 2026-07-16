@@ -3,7 +3,7 @@
 Página web de una sola pantalla (single-file) para **Estética Cristina Blanco**,
 centro de estética en C/ Hospital, Oropesa de Toledo.
 
-- **Archivo principal:** `index.html` (autocontenido: HTML + CSS + JavaScript en un solo fichero).
+- **Archivo principal:** `index.html` (~260 KB, autocontenido: HTML + CSS + JavaScript e imágenes en base64 en un solo fichero).
 - **Tono:** cálido y cercano.
 - **Paleta:** crema `#F7F3EE`, rosa empolvado `#E8D5C8`, tierra tostada `#7A5C4A`, marrón oscuro `#4A3328`, blanco cálido `#FDFAF7`.
 - **Tipografías:** Playfair Display (titulares) + Lato (cuerpo), cargadas desde Google Fonts.
@@ -17,8 +17,9 @@ centro de estética en C/ Hospital, Oropesa de Toledo.
 - Diseño responsive (tablet, móvil y móvil pequeño).
 - Animaciones al hacer scroll.
 
-Las imágenes son ilustraciones vectoriales generadas por CSS/SVG en tonos cálidos,
-pensadas como **relleno temporal**. Sustituir por fotos reales del centro cuando estén disponibles.
+Las 7 imágenes van embebidas en base64 (hero, sobre mí y 5 de galería). Son
+composiciones ilustradas de **relleno temporal**, no fotos reales. Sustituir por
+fotos reales del centro cuando estén disponibles.
 
 ## Cómo publicarla (el JavaScript necesita un servidor real)
 
