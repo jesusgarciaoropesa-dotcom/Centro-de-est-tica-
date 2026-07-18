@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel · Estética Cristina Blanco</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F7F3EE; --rose:#E8D5C8; --earth:#7A5C4A; --earth-dark:#4A3328;
+    --white-warm:#FDFAF7; --ok:#5f7a3a; --bad:#9a3b3b; --warn:#b5892f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--earth-dark);line-height:1.6}
+  h1,h2,h3{font-family:'Playfair Display',serif;font-weight:600}
+  a{color:var(--earth)}
+  .wrap{max-width:900px;margin:0 auto;padding:20px}
+
+  /* Login */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{background:var(--white-warm);border:1px solid var(--rose);border-radius:18px;padding:28px;box-shadow:0 10px 40px rgba(74,51,40,.08)}
+  .login-card{width:100%;max-width:380px;text-align:center}
+  .login-card h1{font-size:1.6rem;margin-bottom:4px}
+  .login-card p{color:var(--earth);font-size:.9rem;margin-bottom:22px}
+  label{display:block;text-align:left;font-size:.8rem;font-weight:700;color:var(--earth);margin:14px 0 5px}
+  input,select{width:100%;padding:11px 13px;border:1.5px solid var(--rose);border-radius:11px;font-family:inherit;font-size:1rem;background:var(--cream);color:var(--earth-dark)}
+  input:focus,select:focus{outline:none;border-color:var(--earth);background:#fff}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:100px;font-weight:700}
+  .btn{background:var(--earth);color:#fff;padding:12px 22px;width:100%;margin-top:20px;font-size:1rem}
+  .btn:hover{background:var(--earth-dark)}
+  .btn:disabled{opacity:.6;cursor:default}
+  .msg{margin-top:14px;font-size:.9rem;min-height:1.2em}
+  .msg.err{color:var(--bad)} .msg.ok{color:var(--ok)}
+
+  /* Dashboard */
+  #app{display:none}
+  .topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:16px 20px;background:var(--earth-dark);color:var(--white-warm)}
+  .topbar h1{font-size:1.15rem;color:#fff}
+  .topbar small{opacity:.7;font-weight:400;font-size:.75rem;display:block}
+  .logout{background:rgba(255,255,255,.12);color:#fff;padding:8px 16px;font-size:.85rem}
+  .tabs{display:flex;gap:8px;margin:20px 0}
+  .tab{background:var(--white-warm);border:1px solid var(--rose);color:var(--earth);padding:9px 18px;border-radius:100px;font-size:.9rem}
+  .tab.active{background:var(--earth);color:#fff;border-color:var(--earth)}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{background:var(--white-warm);border:1px solid var(--rose);color:var(--earth);padding:6px 14px;border-radius:100px;font-size:.82rem}
+  .chip.active{background:var(--rose);color:var(--earth-dark);font-weight:700}
+
+  .reserva{background:var(--white-warm);border:1px solid var(--rose);border-radius:14px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .reserva .info{flex:1;min-width:200px}
+  .reserva .fecha{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--earth-dark)}
+  .reserva .serv{color:var(--earth);font-weight:700;font-size:.92rem;margin-top:2px}
+  .reserva .cli{font-size:.9rem;margin-top:4px}
+  .reserva .cli a{text-decoration:none}
+  .reserva .notas{font-size:.85rem;color:#8a7565;font-style:italic;margin-top:4px}
+  .estado{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.04em}
+  .e-pendiente{background:rgba(181,137,47,.15);color:var(--warn)}
+  .e-confirmada{background:rgba(95,122,58,.15);color:var(--ok)}
+  .e-cancelada{background:rgba(154,59,59,.12);color:var(--bad)}
+  .e-completada{background:rgba(122,92,74,.15);color:var(--earth)}
+  .acciones{display:flex;flex-direction:column;gap:6px;justify-content:center}
+  .acciones button{padding:7px 14px;font-size:.8rem;border-radius:100px}
+  .a-ok{background:var(--ok);color:#fff} .a-bad{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+  .a-done{background:var(--earth);color:#fff}
+  .empty{text-align:center;color:var(--earth);padding:40px;font-style:italic}
+  .row2{display:flex;gap:10px} .row2>div{flex:1}
+  .bloq{display:flex;justify-content:space-between;align-items:center;background:var(--white-warm);border:1px solid var(--rose);border-radius:12px;padding:12px 16px;margin-bottom:10px}
+  .bloq .del{background:transparent;color:var(--bad);border:1px solid var(--bad);padding:5px 12px;font-size:.8rem}
+  .hide{display:none}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="card login-card">
+    <h1>Panel de citas</h1>
+    <p>Estética Cristina Blanco</p>
+    <label for="email">Correo</label>
+    <input id="email" type="email" placeholder="tu@correo.com" autocomplete="username">
+    <label for="pass">Contraseña</label>
+    <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn" id="btnLogin">Entrar</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app">
+  <div class="topbar">
+    <div><h1>Panel de citas<small id="userEmail"></small></h1></div>
+    <button class="logout" id="btnLogout">Salir</button>
+  </div>
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="reservas">Reservas</button>
+      <button class="tab" data-tab="bloqueados">Días bloqueados</button>
+    </div>
+
+    <!-- Reservas -->
+    <div id="tab-reservas">
+      <div class="filters" id="filtros">
+        <button class="chip active" data-f="proximas">Próximas</button>
+        <button class="chip" data-f="pendiente">Pendientes</button>
+        <button class="chip" data-f="confirmada">Confirmadas</button>
+        <button class="chip" data-f="todas">Todas</button>
+      </div>
+      <div id="listaReservas"><div class="empty">Cargando…</div></div>
+    </div>
+
+    <!-- Bloqueados -->
+    <div id="tab-bloqueados" class="hide">
+      <div class="card" style="margin-bottom:18px">
+        <h3 style="margin-bottom:10px;font-size:1.05rem">Bloquear un día</h3>
+        <div class="row2">
+          <div><label>Fecha</label><input id="bFecha" type="date"></div>
+          <div><label>Motivo (opcional)</label><input id="bMotivo" type="text" placeholder="Vacaciones, festivo…"></div>
+        </div>
+        <button class="btn" id="btnBloq" style="margin-top:14px">Bloquear día</button>
+        <div class="msg" id="bloqMsg"></div>
+      </div>
+      <div id="listaBloqueados"><div class="empty">Cargando…</div></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SB_URL = "https://gimoqpusrdltlkrwsykr.supabase.co";
+const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpbW9xcHVzcmRsdGxrcndzeWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDA0NDIsImV4cCI6MjA5Nzk3NjQ0Mn0.xmxP3TGAkXNPsrIKSYj1A-NXrIN1JIyzl9Fv6_FP8Dw";
+const NEGOCIO_ID = "54ef27b9-c15c-4b31-82df-fbe5cad71672";
+const sb = createClient(SB_URL, SB_ANON);
+
+const $ = (id) => document.getElementById(id);
+let filtroActual = "proximas";
+
+// ---- Auth ----
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) mostrarApp(session.user);
+}
+$("btnLogin").addEventListener("click", login);
+$("pass").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+async function login() {
+  const msg = $("loginMsg"); msg.textContent = ""; msg.className = "msg";
+  const email = $("email").value.trim(), password = $("pass").value;
+  if (!email || !password) { msg.textContent = "Introduce correo y contraseña."; msg.className = "msg err"; return; }
+  $("btnLogin").disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  $("btnLogin").disabled = false;
+  if (error) { msg.textContent = "Correo o contraseña incorrectos."; msg.className = "msg err"; return; }
+  mostrarApp(data.user);
+}
+$("btnLogout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+function mostrarApp(user) {
+  $("login").style.display = "none";
+  $("app").style.display = "block";
+  $("userEmail").textContent = user.email;
+  cargarReservas();
+}
+
+// ---- Tabs ----
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+  const tab = t.dataset.tab;
+  $("tab-reservas").classList.toggle("hide", tab !== "reservas");
+  $("tab-bloqueados").classList.toggle("hide", tab !== "bloqueados");
+  if (tab === "bloqueados") cargarBloqueados();
+}));
+
+// ---- Filtros ----
+document.querySelectorAll("#filtros .chip").forEach(c => c.addEventListener("click", () => {
+  document.querySelectorAll("#filtros .chip").forEach(x => x.classList.remove("active"));
+  c.classList.add("active");
+  filtroActual = c.dataset.f;
+  cargarReservas();
+}));
+
+// ---- Reservas ----
+async function cargarReservas() {
+  const cont = $("listaReservas");
+  cont.innerHTML = '<div class="empty">Cargando…</div>';
+  let q = sb.from("reservas")
+    .select("id,fecha,hora,estado,notas,clientes(nombre,telefono),servicios(nombre)")
+    .eq("negocio_id", NEGOCIO_ID);
+  const hoy = new Date().toISOString().split("T")[0];
+  if (filtroActual === "proximas") q = q.gte("fecha", hoy).neq("estado", "cancelada").order("fecha").order("hora");
+  else if (filtroActual === "pendiente") q = q.eq("estado", "pendiente").order("fecha").order("hora");
+  else if (filtroActual === "confirmada") q = q.eq("estado", "confirmada").order("fecha").order("hora");
+  else q = q.order("fecha", { ascending: false }).order("hora");
+
+  const { data, error } = await q;
+  if (error) { cont.innerHTML = '<div class="empty">Error al cargar: ' + error.message + '</div>'; return; }
+  if (!data.length) { cont.innerHTML = '<div class="empty">No hay reservas en esta vista.</div>'; return; }
+  cont.innerHTML = data.map(renderReserva).join("");
+}
+
+function fmtFecha(f) {
+  const d = new Date(f + "T00:00:00");
+  return d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function renderReserva(r) {
+  const cli = r.clientes || {}, serv = r.servicios || {};
+  const tel = esc(cli.telefono || "");
+  let acc = "";
+  if (r.estado === "pendiente") acc += `<button class="a-ok" data-act="confirmada" data-id="${r.id}">Confirmar</button>`;
+  if (r.estado === "confirmada") acc += `<button class="a-done" data-act="completada" data-id="${r.id}">Completada</button>`;
+  if (r.estado !== "cancelada" && r.estado !== "completada") acc += `<button class="a-bad" data-act="cancelada" data-id="${r.id}">Cancelar</button>`;
+  return `<div class="reserva">
+    <div class="info">
+      <div class="fecha">${fmtFecha(r.fecha)} · ${(r.hora||"").slice(0,5)}</div>
+      <div class="serv">${esc(serv.nombre || "—")}</div>
+      <div class="cli">${esc(cli.nombre || "Sin nombre")} · <a href="tel:${tel}">${tel}</a></div>
+      ${r.notas ? `<div class="notas">"${esc(r.notas)}"</div>` : ""}
+      <div style="margin-top:8px"><span class="estado e-${r.estado}">${r.estado}</span></div>
+    </div>
+    <div class="acciones">${acc}</div>
+  </div>`;
+}
+
+$("listaReservas").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  btn.disabled = true;
+  const { error } = await sb.from("reservas").update({ estado: btn.dataset.act }).eq("id", btn.dataset.id);
+  if (error) { alert("No se pudo actualizar: " + error.message); btn.disabled = false; return; }
+  cargarReservas();
+});
+
+// ---- Días bloqueados ----
+async function cargarBloqueados() {
+  const cont = $("listaBloqueados");
+  cont.innerHTML = '<div class="empty">Cargando…</div>';
+  const hoy = new Date().toISOString().split("T")[0];
+  const { data, error } = await sb.from("dias_bloqueados")
+    .select("id,fecha,motivo").eq("negocio_id", NEGOCIO_ID).gte("fecha", hoy).order("fecha");
+  if (error) { cont.innerHTML = '<div class="empty">Error: ' + error.message + '</div>'; return; }
+  if (!data.length) { cont.innerHTML = '<div class="empty">No hay días bloqueados próximos.</div>'; return; }
+  cont.innerHTML = data.map(b => `<div class="bloq">
+    <div><b>${fmtFecha(b.fecha)}</b>${b.motivo ? ' · ' + esc(b.motivo) : ''}</div>
+    <button class="del" data-id="${b.id}">Quitar</button></div>`).join("");
+}
+$("btnBloq").addEventListener("click", async () => {
+  const msg = $("bloqMsg"); msg.textContent = ""; msg.className = "msg";
+  const fecha = $("bFecha").value, motivo = $("bMotivo").value.trim();
+  if (!fecha) { msg.textContent = "Elige una fecha."; msg.className = "msg err"; return; }
+  const { error } = await sb.from("dias_bloqueados").insert({ negocio_id: NEGOCIO_ID, fecha, motivo: motivo || null });
+  if (error) { msg.textContent = "Error: " + error.message; msg.className = "msg err"; return; }
+  $("bFecha").value = ""; $("bMotivo").value = "";
+  msg.textContent = "Día bloqueado."; msg.className = "msg ok";
+  cargarBloqueados();
+});
+$("listaBloqueados").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-id]");
+  if (!btn) return;
+  if (!confirm("¿Quitar el bloqueo de este día?")) return;
+  const { error } = await sb.from("dias_bloqueados").delete().eq("id", btn.dataset.id);
+  if (error) { alert("No se pudo quitar: " + error.message); return; }
+  cargarBloqueados();
+});
+
+init();
+</script>
+</body>
+</html>

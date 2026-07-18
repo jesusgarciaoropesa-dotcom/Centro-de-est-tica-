@@ -13,9 +13,28 @@ centro de estética en C/ Hospital, Oropesa de Toledo.
 
 - Modal de reserva de cita (se abre desde la nav, el hero y cada botón "Reservar" de las tarjetas de servicio, preseleccionando el tratamiento).
 - Menú hamburguesa en móvil.
-- Formulario de contacto y de reserva (maqueta visual: muestran confirmación, **sin backend todavía**).
+- **Reserva conectada a Supabase**: el formulario guarda cliente + reserva reales (ver sección abajo).
 - Diseño responsive (tablet, móvil y móvil pequeño).
 - Animaciones al hacer scroll.
+
+## Reservas y panel de administración (Supabase)
+
+Proyecto Supabase: **`gimoqpusrdltlkrwsykr`** (compartido, multi-tenant).
+Negocio: `Estética Cristina Blanco`, `negocio_id = 54ef27b9-c15c-4b31-82df-fbe5cad71672`.
+Todo filtra/inserta por ese `negocio_id`.
+
+- **Servicios**: se cargan en el modal desde la tabla `servicios` (6 creados, precios provisionales editables).
+- **Reserva**: el formulario llama a la función `crear_reserva_web` (RPC `SECURITY DEFINER`),
+  que valida el servicio, comprueba días bloqueados y huecos ocupados, crea/actualiza el
+  cliente y guarda la reserva con estado `pendiente`. No expone escritura directa a la tabla.
+- **Panel admin**: `admin.html`. Login con Supabase Auth (mismo usuario admin que la barbería).
+  Permite ver reservas (próximas/pendientes/confirmadas/todas), confirmarlas, cancelarlas,
+  marcarlas como completadas y gestionar días bloqueados. Protegido por RLS (`is_admin_of`).
+- La clave usada en el front es la **`anon` pública** (segura para el navegador).
+- Seguridad: se activó RLS en la tabla `negocios` (lectura pública, escritura solo admins).
+
+> Nota: la reserva solo funciona con la web **publicada** (Netlify/GitHub Pages), no
+> abriendo el archivo en local, porque necesita hacer peticiones de red a Supabase.
 
 Las 7 imágenes van embebidas en base64 (hero, sobre mí y 5 de galería). Son
 composiciones ilustradas de **relleno temporal**, no fotos reales. Sustituir por
@@ -39,7 +58,7 @@ hay que servir la página desde una URL real. Opciones:
 
 1. Publicar el hosting definitivo (Netlify o GitHub Pages).
 2. Sustituir las ilustraciones por fotos reales del centro.
-3. Completar datos reales: teléfono, horario y precios de cada tratamiento.
-4. Decidir si los formularios necesitan backend real (envío de email / base de datos) o se quedan como maqueta.
+3. Completar datos reales: teléfono, horario y precios reales de cada tratamiento (los precios en Supabase son provisionales).
+4. Reserva y panel ya conectados a Supabase (ver sección arriba). Pendiente opcional: aviso por email/WhatsApp al recibir una reserva.
 5. Revisar el texto de "Sobre mí" con Cristina para ajustar tono y datos biográficos.
 6. Verificar el usuario de Instagram (`@esteticacristinablanco`, aproximado).

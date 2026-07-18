@@ -251,24 +251,21 @@ html { scroll-behavior:smooth; }
     </div>
     <div class="modal-body">
       <div class="modal form-row">
-        <div class="form-field"><label>Nombre</label><input type="text" placeholder="Tu nombre"></div>
-        <div class="form-field"><label>Teléfono</label><input type="tel" placeholder="6XX XXX XXX"></div>
+        <div class="form-field"><label>Nombre</label><input id="rNombre" type="text" placeholder="Tu nombre"></div>
+        <div class="form-field"><label>Teléfono</label><input id="rTelefono" type="tel" placeholder="6XX XXX XXX"></div>
       </div>
       <div class="form-field"><label>Tratamiento</label>
         <select id="modalTreatment">
           <option value="">¿Qué te apetece?</option>
-          <option>Dermoestetica facial</option>
-          <option>Análisis de piel</option>
-          <option>Estética avanzada (Tactum Pro)</option>
-          <option>Depilación láser</option>
-          <option>Depilación con cera</option>
-          <option>Manicura / pedicura</option>
-          <option>Maquillaje profesional</option>
         </select>
       </div>
-      <div class="form-field"><label>Día preferido</label><input type="date"></div>
-      <div class="form-field"><label>Mensaje (opcional)</label><textarea placeholder="Cuéntame si tienes algo en mente o prefieres algún horario..."></textarea></div>
-      <button class="btn-form">Enviar solicitud</button>
+      <div class="modal form-row">
+        <div class="form-field"><label>Día preferido</label><input id="rFecha" type="date"></div>
+        <div class="form-field"><label>Hora preferida</label><select id="rHora"><option value="">Elige hora</option></select></div>
+      </div>
+      <div class="form-field"><label>Mensaje (opcional)</label><textarea id="rMensaje" placeholder="Cuéntame si tienes algo en mente o prefieres algún horario..."></textarea></div>
+      <button class="btn-form" id="rSubmit" onclick="enviarReserva()">Enviar solicitud</button>
+      <p class="modal-status" id="rStatus" style="display:none;margin-top:12px;padding:10px 14px;border-radius:10px;font-size:0.92rem;text-align:center"></p>
       <p class="modal-note">Te confirmamos la cita por teléfono en menos de 24h.</p>
     </div>
   </div>
@@ -409,15 +406,20 @@ html { scroll-behavior:smooth; }
 </footer>
 
 <script>
-  // Modal
+  // ===== Config Supabase =====
+  const SB_URL = "https://gimoqpusrdltlkrwsykr.supabase.co";
+  const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpbW9xcHVzcmRsdGxrcndzeWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDA0NDIsImV4cCI6MjA5Nzk3NjQ0Mn0.xmxP3TGAkXNPsrIKSYj1A-NXrIN1JIyzl9Fv6_FP8Dw";
+  const NEGOCIO_ID = "54ef27b9-c15c-4b31-82df-fbe5cad71672";
+  const sbHeaders = { "apikey": SB_ANON, "Authorization": "Bearer " + SB_ANON, "Content-Type": "application/json" };
+
+  // ===== Modal =====
   function openModal(e, treatment) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     document.getElementById('modalOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
-    var select = document.getElementById('modalTreatment');
-    if (treatment && select) {
-      select.value = treatment;
-    }
+    var status = document.getElementById('rStatus');
+    if (status) status.style.display = 'none';
+    if (treatment) preseleccionarTratamiento(treatment);
   }
   function closeModal() {
     document.getElementById('modalOverlay').classList.remove('open');
@@ -430,13 +432,104 @@ html { scroll-behavior:smooth; }
     if (e.key === 'Escape') closeModal();
   });
 
-  // Nav móvil
-  function toggleNav() {
-    document.getElementById('navLinks').classList.toggle('open');
+  // ===== Nav móvil =====
+  function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
+  function closeNav() { document.getElementById('navLinks').classList.remove('open'); }
+
+  // ===== Cargar servicios desde Supabase =====
+  var SERVICIOS = [];
+  function normaliza(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+  async function cargarServicios() {
+    var select = document.getElementById('modalTreatment');
+    try {
+      var r = await fetch(SB_URL + "/rest/v1/servicios?select=id,nombre,precio_desde,duracion_minutos&negocio_id=eq." + NEGOCIO_ID + "&order=nombre", { headers: sbHeaders });
+      SERVICIOS = await r.json();
+      if (!Array.isArray(SERVICIOS)) SERVICIOS = [];
+      SERVICIOS.forEach(function(s){
+        var o = document.createElement('option');
+        o.value = s.id; o.textContent = s.nombre;
+        select.appendChild(o);
+      });
+    } catch (err) { console.error('No se pudieron cargar los servicios', err); }
   }
-  function closeNav() {
-    document.getElementById('navLinks').classList.remove('open');
+  function preseleccionarTratamiento(nombre) {
+    var select = document.getElementById('modalTreatment');
+    var n = normaliza(nombre);
+    var match = SERVICIOS.find(function(s){ var sn = normaliza(s.nombre); return sn === n || sn.indexOf(n) >= 0 || n.indexOf(sn) >= 0; });
+    // fallback por palabras clave
+    if (!match) {
+      var claves = [['dermo','Dermo'],['tactum','Tactum'],['avanzada','avanzada'],['analisis','Análisis'],['laser','láser'],['depil','láser'],['manicura','Uñas'],['uñas','Uñas'],['unas','Uñas'],['maquill','Maquillaje']];
+      for (var i=0;i<claves.length;i++){ if (n.indexOf(claves[i][0])>=0){ match = SERVICIOS.find(function(s){ return normaliza(s.nombre).indexOf(normaliza(claves[i][1]))>=0; }); if(match) break; } }
+    }
+    if (match) select.value = match.id;
   }
+
+  // ===== Horas disponibles =====
+  function rellenarHoras() {
+    var sel = document.getElementById('rHora');
+    for (var h=10; h<=19; h++) {
+      ['00','30'].forEach(function(m){
+        var o = document.createElement('option');
+        o.value = (h<10?'0'+h:h) + ':' + m;
+        o.textContent = o.value;
+        sel.appendChild(o);
+      });
+    }
+  }
+
+  function mostrarEstado(msg, ok) {
+    var s = document.getElementById('rStatus');
+    s.textContent = msg;
+    s.style.display = 'block';
+    s.style.background = ok ? 'rgba(122,140,90,0.15)' : 'rgba(180,70,70,0.12)';
+    s.style.color = ok ? '#4a5a30' : '#9a3b3b';
+  }
+
+  // ===== Enviar reserva =====
+  async function enviarReserva() {
+    var nombre = document.getElementById('rNombre').value.trim();
+    var telefono = document.getElementById('rTelefono').value.trim();
+    var servicio_id = document.getElementById('modalTreatment').value;
+    var fecha = document.getElementById('rFecha').value;
+    var hora = document.getElementById('rHora').value;
+    var mensaje = document.getElementById('rMensaje').value.trim();
+
+    if (!nombre || !telefono || !servicio_id || !fecha || !hora) {
+      mostrarEstado('Completa nombre, teléfono, tratamiento, día y hora.', false);
+      return;
+    }
+    var btn = document.getElementById('rSubmit');
+    btn.disabled = true; var txt = btn.textContent; btn.textContent = 'Enviando...';
+    try {
+      var r = await fetch(SB_URL + "/rest/v1/rpc/crear_reserva_web", {
+        method: 'POST', headers: sbHeaders,
+        body: JSON.stringify({
+          p_negocio_id: NEGOCIO_ID, p_nombre: nombre, p_telefono: telefono,
+          p_email: null, p_servicio_id: servicio_id, p_fecha: fecha, p_hora: hora, p_notas: mensaje || null
+        })
+      });
+      var data = await r.json();
+      if (data && data.ok) {
+        mostrarEstado('¡Solicitud recibida! Te confirmo la cita por teléfono muy pronto. 💛', true);
+        ['rNombre','rTelefono','rFecha','rMensaje'].forEach(function(id){ document.getElementById(id).value=''; });
+        document.getElementById('modalTreatment').value=''; document.getElementById('rHora').value='';
+      } else {
+        mostrarEstado((data && data.error) ? data.error : 'No se pudo enviar. Inténtalo de nuevo.', false);
+      }
+    } catch (err) {
+      mostrarEstado('Error de conexión. Revisa tu internet e inténtalo de nuevo.', false);
+    } finally {
+      btn.disabled = false; btn.textContent = txt;
+    }
+  }
+
+  // ===== Init =====
+  document.addEventListener('DOMContentLoaded', function(){
+    cargarServicios();
+    rellenarHoras();
+    var f = document.getElementById('rFecha');
+    if (f) f.min = new Date().toISOString().split('T')[0];
+  });
 </script>
 </body>
 </html>
