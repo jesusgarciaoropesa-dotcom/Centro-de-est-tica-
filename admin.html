@@ -74,6 +74,23 @@
   .a-done{background:var(--earth);color:#fff}
   .empty{text-align:center;color:var(--earth);padding:40px;font-style:italic}
   .aviso-banner{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--earth-dark);color:#fff;padding:13px 20px;border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.28);z-index:999;max-width:92%;font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .4s}
+  /* Agenda */
+  .agenda-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .agenda-nav input{flex:1;text-align:center;font-weight:700}
+  .agenda-nav .chip{font-size:1.3rem;line-height:1;padding:6px 16px;font-weight:700}
+  .ag-resumen{text-align:center;font-size:.85rem;color:var(--earth);margin-bottom:14px;font-weight:700;letter-spacing:.02em}
+  .slot{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;margin-bottom:8px;border:1px solid var(--rose);background:var(--white-warm)}
+  .slot .hora{font-family:'Playfair Display',serif;font-weight:600;min-width:52px;color:var(--earth-dark)}
+  .slot .det{flex:1;min-width:0}
+  .slot .det b{font-weight:700}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .dot.g{background:var(--ok)} .dot.o{background:var(--earth)} .dot.b{background:#b9a99c}
+  .slot.libre{border-style:dashed;cursor:pointer}
+  .slot.libre .det{color:var(--ok);font-size:.9rem}
+  .slot.libre:active{background:rgba(95,122,58,.08)}
+  .slot.ocupado{background:var(--cream);border-color:var(--rose)}
+  .slot.bloqueado{opacity:.65}
+  .slot.bloqueado .det{color:#8a7565;font-size:.9rem}
   .row2{display:flex;gap:10px;flex-wrap:wrap} .row2>div{flex:1 1 120px;min-width:0}
   .bloq{display:flex;justify-content:space-between;align-items:center;background:var(--white-warm);border:1px solid var(--rose);border-radius:12px;padding:12px 16px;margin-bottom:10px}
   .bloq .del{background:transparent;color:var(--bad);border:1px solid var(--bad);padding:5px 12px;font-size:.8rem}
@@ -108,6 +125,7 @@
   <div class="wrap">
     <div class="tabs">
       <button class="tab active" data-tab="reservas">Reservas</button>
+      <button class="tab" data-tab="agenda">Agenda</button>
       <button class="tab" data-tab="nueva">+ Nueva cita</button>
       <button class="tab" data-tab="bloqueados">Días bloqueados</button>
     </div>
@@ -121,6 +139,17 @@
         <button class="chip" data-f="todas">Todas</button>
       </div>
       <div id="listaReservas"><div class="empty">Cargando…</div></div>
+    </div>
+
+    <!-- Agenda -->
+    <div id="tab-agenda" class="hide">
+      <div class="agenda-nav">
+        <button class="chip" id="agPrev" aria-label="Día anterior">‹</button>
+        <input id="agFecha" type="date">
+        <button class="chip" id="agNext" aria-label="Día siguiente">›</button>
+      </div>
+      <div class="ag-resumen" id="agResumen"></div>
+      <div id="agSlots"></div>
     </div>
 
     <!-- Nueva cita -->
@@ -281,10 +310,12 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   t.classList.add("active");
   const tab = t.dataset.tab;
   $("tab-reservas").classList.toggle("hide", tab !== "reservas");
+  $("tab-agenda").classList.toggle("hide", tab !== "agenda");
   $("tab-nueva").classList.toggle("hide", tab !== "nueva");
   $("tab-bloqueados").classList.toggle("hide", tab !== "bloqueados");
   if (tab === "bloqueados") cargarBloqueados();
   if (tab === "nueva") prepararNuevaCita();
+  if (tab === "agenda") prepararAgenda();
 }));
 
 // ---- Filtros ----
@@ -346,6 +377,74 @@ $("listaReservas").addEventListener("click", async (e) => {
   const { error } = await sb.from("reservas").update({ estado: btn.dataset.act }).eq("id", btn.dataset.id);
   if (error) { alert("No se pudo actualizar: " + error.message); btn.disabled = false; return; }
   cargarReservas();
+});
+
+// ---- Agenda (huecos libres / ocupados por día) ----
+function slotsDelDia() {
+  const a = [];
+  for (let h = 10; h <= 19; h++) ["00", "30"].forEach(m => a.push((h < 10 ? "0" + h : h) + ":" + m));
+  return a;
+}
+function prepararAgenda() {
+  if (!$("agFecha").value) $("agFecha").value = new Date().toISOString().split("T")[0];
+  cargarAgenda();
+}
+function shiftDia(n) {
+  const d = new Date($("agFecha").value + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  $("agFecha").value = d.toISOString().split("T")[0];
+  cargarAgenda();
+}
+$("agPrev").addEventListener("click", () => shiftDia(-1));
+$("agNext").addEventListener("click", () => shiftDia(1));
+$("agFecha").addEventListener("change", cargarAgenda);
+
+async function cargarAgenda() {
+  const fecha = $("agFecha").value;
+  if (!fecha) return;
+  $("agSlots").innerHTML = '<div class="empty">Cargando…</div>';
+  $("agResumen").textContent = "";
+  const [resR, resB] = await Promise.all([
+    sb.from("reservas").select("hora,estado,clientes(nombre),servicios(nombre)")
+      .eq("negocio_id", NEGOCIO_ID).eq("fecha", fecha).neq("estado", "cancelada"),
+    sb.from("dias_bloqueados").select("hora_inicio,hora_fin,motivo")
+      .eq("negocio_id", NEGOCIO_ID).eq("fecha", fecha)
+  ]);
+  const reservas = resR.data || [], bloqueos = resB.data || [];
+  let libres = 0, ocup = 0;
+  const html = slotsDelDia().map(slot => {
+    const r = reservas.find(x => (x.hora || "").slice(0, 5) === slot);
+    const b = bloqueos.find(x =>
+      (!x.hora_inicio && !x.hora_fin) ||
+      (x.hora_inicio && x.hora_fin && slot >= x.hora_inicio.slice(0, 5) && slot < x.hora_fin.slice(0, 5)));
+    if (r) {
+      ocup++;
+      const cli = (r.clientes && r.clientes.nombre) || "Cliente";
+      const serv = (r.servicios && r.servicios.nombre) || "";
+      return `<div class="slot ocupado"><span class="dot o"></span><span class="hora">${slot}</span>
+        <div class="det"><b>${esc(cli)}</b><div style="font-size:.85rem;color:var(--earth)">${esc(serv)}</div></div>
+        <span class="estado e-${r.estado}">${r.estado}</span></div>`;
+    }
+    if (b) {
+      return `<div class="slot bloqueado"><span class="dot b"></span><span class="hora">${slot}</span>
+        <div class="det">Bloqueado${b.motivo ? " · " + esc(b.motivo) : ""}</div></div>`;
+    }
+    libres++;
+    return `<div class="slot libre" data-hora="${slot}"><span class="dot g"></span><span class="hora">${slot}</span>
+      <div class="det">Libre · toca para reservar</div></div>`;
+  }).join("");
+  $("agSlots").innerHTML = html;
+  $("agResumen").textContent = `${libres} libres · ${ocup} ocupados`;
+}
+
+$("agSlots").addEventListener("click", async (e) => {
+  const s = e.target.closest(".slot.libre");
+  if (!s) return;
+  const fecha = $("agFecha").value, hora = s.dataset.hora;
+  document.querySelector('.tab[data-tab="nueva"]').click();
+  await prepararNuevaCita();
+  $("nFecha").value = fecha;
+  $("nHora").value = hora;
 });
 
 // ---- Nueva cita (creada por la administradora) ----
