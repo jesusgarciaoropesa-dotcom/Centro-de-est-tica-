@@ -104,6 +104,15 @@
   .row2{display:flex;gap:10px;flex-wrap:wrap} .row2>div{flex:1 1 120px;min-width:0}
   .bloq{display:flex;justify-content:space-between;align-items:center;background:var(--white-warm);border:1px solid var(--rose);border-radius:12px;padding:12px 16px;margin-bottom:10px}
   .bloq .del{background:transparent;color:var(--bad);border:1px solid var(--bad);padding:5px 12px;font-size:.8rem}
+  .a-edit{background:transparent;color:var(--earth);border:1px solid var(--rose)}
+  /* Modal editar */
+  .modal-ov{position:fixed;inset:0;background:rgba(58,39,30,.55);display:none;align-items:flex-start;justify-content:center;padding:18px;z-index:1000;overflow-y:auto}
+  .modal-ov.open{display:flex}
+  .modal-card{background:var(--white-warm);border-radius:18px;padding:22px;width:100%;max-width:430px;box-shadow:0 20px 60px rgba(0,0,0,.3);margin:auto}
+  .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .modal-top h3{font-size:1.3rem}
+  .modal-top .x{background:var(--cream);color:var(--earth);width:36px;height:36px;border-radius:50%;font-size:1rem;flex:none}
+  .btn-del{background:transparent;color:var(--bad);border:1.5px solid var(--bad);width:100%;padding:11px;border-radius:100px;margin-top:10px;font-weight:700}
   .hide{display:none}
 </style>
 </head>
@@ -220,14 +229,57 @@
   </div>
 </div>
 
+<!-- MODAL EDITAR RESERVA -->
+<div class="modal-ov" id="edOverlay">
+  <div class="modal-card">
+    <div class="modal-top"><h3>Editar cita</h3><button class="x" id="edClose">✕</button></div>
+    <label>Nombre de la clienta</label>
+    <input id="edNombre" type="text">
+    <label>Teléfono</label>
+    <input id="edTelefono" type="tel">
+    <label>Tratamiento</label>
+    <select id="edServicio"></select>
+    <div class="row2">
+      <div><label>Día</label><input id="edFecha" type="date"></div>
+      <div><label>Hora</label><select id="edHora"></select></div>
+    </div>
+    <label>Estado</label>
+    <select id="edEstado">
+      <option value="pendiente">Pendiente</option>
+      <option value="confirmada">Confirmada</option>
+      <option value="completada">Completada</option>
+      <option value="cancelada">Cancelada</option>
+    </select>
+    <label>Notas</label>
+    <input id="edNotas" type="text" placeholder="Observaciones">
+    <button class="btn" id="edGuardar">Guardar cambios</button>
+    <button class="btn-del" id="edEliminar">Eliminar cita</button>
+    <div class="msg" id="edMsg"></div>
+  </div>
+</div>
+
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SB_URL = "https://gimoqpusrdltlkrwsykr.supabase.co";
 const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpbW9xcHVzcmRsdGxrcndzeWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDA0NDIsImV4cCI6MjA5Nzk3NjQ0Mn0.xmxP3TGAkXNPsrIKSYj1A-NXrIN1JIyzl9Fv6_FP8Dw";
 const NEGOCIO_ID = "54ef27b9-c15c-4b31-82df-fbe5cad71672";
-// Citas de 1h; cierre de mediodía 14:00-16:00
-const HORAS = ["10:00", "11:00", "12:00", "13:00", "16:00", "17:00", "18:00", "19:00"];
+// Citas de 1h; cierre de mediodía 14:00-16:00. Sábados (getDay()===6) solo por la mañana.
+const MORNING = ["10:00", "11:00", "12:00", "13:00"];
+const AFTERNOON = ["16:00", "17:00", "18:00", "19:00"];
+const HORAS = MORNING.concat(AFTERNOON);
+function horasParaFecha(f) {
+  if (!f) return HORAS.slice();
+  const d = new Date(f + "T00:00:00");
+  return d.getDay() === 6 ? MORNING.slice() : HORAS.slice();
+}
+function fillHoras(sel, fecha, seleccion) {
+  const actual = seleccion !== undefined ? seleccion : sel.value;
+  let list = horasParaFecha(fecha);
+  if (actual && !list.includes(actual)) list = list.concat([actual]).sort();
+  sel.innerHTML = '<option value="">Hora</option>';
+  list.forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; if (v === actual) o.selected = true; sel.appendChild(o); });
+}
 const sb = createClient(SB_URL, SB_ANON);
 
 // Registrar service worker (necesario para instalar como app)
@@ -391,6 +443,7 @@ function renderReserva(r) {
   if (r.estado === "pendiente") acc += `<button class="a-ok" data-act="confirmada" data-id="${r.id}">Confirmar</button>`;
   if (r.estado === "confirmada") acc += `<button class="a-done" data-act="completada" data-id="${r.id}">Completada</button>`;
   if (r.estado !== "cancelada" && r.estado !== "completada") acc += `<button class="a-bad" data-act="cancelada" data-id="${r.id}">Cancelar</button>`;
+  acc += `<button class="a-edit" data-edit="${r.id}">Editar</button>`;
   return `<div class="reserva">
     <div class="info">
       <div class="fecha">${fmtFecha(r.fecha)} · ${(r.hora||"").slice(0,5)}</div>
@@ -404,6 +457,8 @@ function renderReserva(r) {
 }
 
 $("listaReservas").addEventListener("click", async (e) => {
+  const ed = e.target.closest("button[data-edit]");
+  if (ed) { abrirDetalleReserva(ed.dataset.edit); return; }
   const btn = e.target.closest("button[data-act]");
   if (!btn) return;
   btn.disabled = true;
@@ -436,14 +491,14 @@ async function cargarAgenda() {
   $("agSlots").innerHTML = '<div class="empty">Cargando…</div>';
   $("agResumen").textContent = "";
   const [resR, resB] = await Promise.all([
-    sb.from("reservas").select("hora,estado,clientes(nombre),servicios(nombre)")
+    sb.from("reservas").select("id,hora,estado,clientes(nombre),servicios(nombre)")
       .eq("negocio_id", NEGOCIO_ID).eq("fecha", fecha).neq("estado", "cancelada"),
     sb.from("dias_bloqueados").select("hora_inicio,hora_fin,motivo")
       .eq("negocio_id", NEGOCIO_ID).eq("fecha", fecha)
   ]);
   const reservas = resR.data || [], bloqueos = resB.data || [];
   let libres = 0, ocup = 0;
-  const html = slotsDelDia().map(slot => {
+  const html = horasParaFecha(fecha).map(slot => {
     const r = reservas.find(x => (x.hora || "").slice(0, 5) === slot);
     const b = bloqueos.find(x =>
       (!x.hora_inicio && !x.hora_fin) ||
@@ -452,7 +507,7 @@ async function cargarAgenda() {
       ocup++;
       const cli = (r.clientes && r.clientes.nombre) || "Cliente";
       const serv = (r.servicios && r.servicios.nombre) || "";
-      return `<div class="slot ocupado"><span class="dot o"></span><span class="hora">${slot}</span>
+      return `<div class="slot ocupado" data-id="${r.id}" style="cursor:pointer"><span class="dot o"></span><span class="hora">${slot}</span>
         <div class="det"><b>${esc(cli)}</b><div style="font-size:.85rem;color:var(--earth)">${esc(serv)}</div></div>
         <span class="estado e-${r.estado}">${r.estado}</span></div>`;
     }
@@ -469,13 +524,15 @@ async function cargarAgenda() {
 }
 
 $("agSlots").addEventListener("click", async (e) => {
+  const oc = e.target.closest(".slot.ocupado");
+  if (oc) { abrirDetalleReserva(oc.dataset.id); return; }
   const s = e.target.closest(".slot.libre");
   if (!s) return;
   const fecha = $("agFecha").value, hora = s.dataset.hora;
   document.querySelector('.tab[data-tab="nueva"]').click();
   await prepararNuevaCita();
   $("nFecha").value = fecha;
-  $("nHora").value = hora;
+  fillHoras($("nHora"), fecha, hora);
 });
 
 // ---- Agenda: vista semanal ----
@@ -520,7 +577,7 @@ async function cargarSemana() {
   const desde = iso(dias[0]), hasta = iso(dias[dias.length - 1]);
   $("wRango").textContent = fmtCorta(dias[0]) + " – " + fmtCorta(dias[dias.length - 1]);
   const [resR, resB] = await Promise.all([
-    sb.from("reservas").select("fecha,hora,estado,clientes(nombre)")
+    sb.from("reservas").select("id,fecha,hora,estado,clientes(nombre)")
       .eq("negocio_id", NEGOCIO_ID).gte("fecha", desde).lte("fecha", hasta).neq("estado", "cancelada"),
     sb.from("dias_bloqueados").select("fecha,hora_inicio,hora_fin")
       .eq("negocio_id", NEGOCIO_ID).gte("fecha", desde).lte("fecha", hasta)
@@ -530,13 +587,13 @@ async function cargarSemana() {
   $("wDias").innerHTML = dias.map((d, i) => {
     const f = iso(d);
     let libres = 0, ocup = 0;
-    const chips = HORAS.map(h => {
+    const chips = horasParaFecha(f).map(h => {
       const r = reservas.find(x => x.fecha === f && (x.hora || "").slice(0, 5) === h);
       const b = bloqueos.find(x => x.fecha === f &&
         ((!x.hora_inicio && !x.hora_fin) ||
          (x.hora_inicio && x.hora_fin && h >= x.hora_inicio.slice(0, 5) && h < x.hora_fin.slice(0, 5))));
       const et = h.slice(0, 2);
-      if (r) { ocup++; const cli = (r.clientes && r.clientes.nombre) || "Cita"; return `<span class="wchip o" data-fecha="${f}" title="${esc(cli)}">${et}</span>`; }
+      if (r) { ocup++; const cli = (r.clientes && r.clientes.nombre) || "Cita"; return `<span class="wchip o" data-id="${r.id}" data-fecha="${f}" title="${esc(cli)}">${et}</span>`; }
       if (b) return `<span class="wchip b" title="Bloqueado">${et}</span>`;
       libres++;
       return `<span class="wchip g" data-fecha="${f}" data-hora="${h}">${et}</span>`;
@@ -551,10 +608,12 @@ async function cargarSemana() {
 $("wDias").addEventListener("click", async (e) => {
   const chip = e.target.closest(".wchip");
   const head = e.target.closest(".wday-head");
+  if (chip && chip.classList.contains("o")) { abrirDetalleReserva(chip.dataset.id); return; }
   if (chip && chip.classList.contains("g")) {
     document.querySelector('.tab[data-tab="nueva"]').click();
     await prepararNuevaCita();
-    $("nFecha").value = chip.dataset.fecha; $("nHora").value = chip.dataset.hora;
+    $("nFecha").value = chip.dataset.fecha;
+    fillHoras($("nHora"), chip.dataset.fecha, chip.dataset.hora);
     return;
   }
   const fecha = (chip && chip.dataset.fecha) || (head && head.dataset.fecha);
@@ -567,21 +626,27 @@ $("wDias").addEventListener("click", async (e) => {
 
 // ---- Nueva cita (creada por la administradora) ----
 let SERVICIOS_ADMIN = [];
-async function prepararNuevaCita() {
+async function asegurarServicios() {
   if (!SERVICIOS_ADMIN.length) {
     const { data } = await sb.from("servicios").select("id,nombre").eq("negocio_id", NEGOCIO_ID).order("nombre");
     SERVICIOS_ADMIN = data || [];
-    const sel = $("nServicio");
+  }
+  return SERVICIOS_ADMIN;
+}
+function fillServicioSelect(sel, selectedId) {
+  sel.innerHTML = "";
+  SERVICIOS_ADMIN.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.nombre; if (s.id === selectedId) o.selected = true; sel.appendChild(o); });
+}
+async function prepararNuevaCita() {
+  await asegurarServicios();
+  const sel = $("nServicio");
+  if (sel.options.length <= 1) {
     SERVICIOS_ADMIN.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.nombre; sel.appendChild(o); });
   }
-  const selH = $("nHora");
-  if (selH.options.length <= 1) {
-    HORAS.forEach(v => {
-      const o = document.createElement("option"); o.value = v; o.textContent = v; selH.appendChild(o);
-    });
-  }
   $("nFecha").min = hoyLocal();
+  fillHoras($("nHora"), $("nFecha").value);
 }
+$("nFecha").addEventListener("change", () => fillHoras($("nHora"), $("nFecha").value));
 $("btnCrear").addEventListener("click", async () => {
   const msg = $("nMsg"); msg.textContent = ""; msg.className = "msg";
   const nombre = $("nNombre").value.trim(), telefono = $("nTelefono").value.trim();
@@ -614,6 +679,74 @@ $("btnCrear").addEventListener("click", async () => {
   } finally {
     $("btnCrear").disabled = false;
   }
+});
+
+// ---- Ver / editar una reserva ----
+let edReservaId = null, edClienteId = null;
+
+function refrescarVistaActual() {
+  if (!$("tab-reservas").classList.contains("hide")) cargarReservas();
+  else if (!$("tab-agenda").classList.contains("hide")) {
+    if (!$("agVistaSemana").classList.contains("hide")) cargarSemana();
+    else cargarAgenda();
+  }
+}
+
+async function abrirDetalleReserva(id) {
+  const { data, error } = await sb.from("reservas")
+    .select("id,fecha,hora,estado,notas,cliente_id,servicio_id,clientes(nombre,telefono)")
+    .eq("id", id).single();
+  if (error || !data) { alert("No se pudo cargar la cita."); return; }
+  await asegurarServicios();
+  edReservaId = data.id; edClienteId = data.cliente_id;
+  fillServicioSelect($("edServicio"), data.servicio_id);
+  $("edNombre").value = (data.clientes && data.clientes.nombre) || "";
+  $("edTelefono").value = (data.clientes && data.clientes.telefono) || "";
+  $("edFecha").value = data.fecha;
+  fillHoras($("edHora"), data.fecha, (data.hora || "").slice(0, 5));
+  $("edEstado").value = data.estado;
+  $("edNotas").value = data.notas || "";
+  $("edMsg").textContent = ""; $("edMsg").className = "msg";
+  $("edOverlay").classList.add("open");
+}
+function cerrarEdit() { $("edOverlay").classList.remove("open"); }
+$("edClose").addEventListener("click", cerrarEdit);
+$("edOverlay").addEventListener("click", (e) => { if (e.target === $("edOverlay")) cerrarEdit(); });
+$("edFecha").addEventListener("change", () => fillHoras($("edHora"), $("edFecha").value));
+
+$("edGuardar").addEventListener("click", async () => {
+  const msg = $("edMsg"); msg.textContent = ""; msg.className = "msg";
+  const nombre = $("edNombre").value.trim(), telefono = $("edTelefono").value.trim();
+  const servicio_id = $("edServicio").value, fecha = $("edFecha").value;
+  const hora = $("edHora").value, estado = $("edEstado").value, notas = $("edNotas").value.trim();
+  if (!nombre || !telefono || !servicio_id || !fecha || !hora) {
+    msg.textContent = "Completa nombre, teléfono, tratamiento, día y hora."; msg.className = "msg err"; return;
+  }
+  $("edGuardar").disabled = true;
+  try {
+    if (edClienteId) {
+      const { error: ec } = await sb.from("clientes").update({ nombre, telefono }).eq("id", edClienteId);
+      if (ec) throw ec;
+    }
+    const { error: er } = await sb.from("reservas")
+      .update({ servicio_id, fecha, hora, estado, notas: notas || null }).eq("id", edReservaId);
+    if (er) throw er;
+    msg.textContent = "Cambios guardados."; msg.className = "msg ok";
+    refrescarVistaActual();
+    setTimeout(cerrarEdit, 600);
+  } catch (err) {
+    msg.textContent = "Error: " + (err.message || err); msg.className = "msg err";
+  } finally {
+    $("edGuardar").disabled = false;
+  }
+});
+
+$("edEliminar").addEventListener("click", async () => {
+  if (!confirm("¿Eliminar esta cita definitivamente? (Si solo quieres anularla, usa el estado 'Cancelada').")) return;
+  const { error } = await sb.from("reservas").delete().eq("id", edReservaId);
+  if (error) { alert("No se pudo eliminar: " + error.message); return; }
+  cerrarEdit();
+  refrescarVistaActual();
 });
 
 // ---- Días bloqueados ----

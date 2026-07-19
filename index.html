@@ -464,13 +464,23 @@ html { scroll-behavior:smooth; }
     if (match) select.value = match.id;
   }
 
-  // ===== Horas disponibles (citas de 1h; cierre de mediodía 14:00-16:00) =====
-  var HORAS_DISPONIBLES = ["10:00","11:00","12:00","13:00","16:00","17:00","18:00","19:00"];
+  // ===== Horas disponibles (citas de 1h; cierre 14:00-16:00; sábados solo mañana) =====
+  var MORNING = ["10:00","11:00","12:00","13:00"];
+  var AFTERNOON = ["16:00","17:00","18:00","19:00"];
+  function horasParaFecha(f){
+    if(!f) return MORNING.concat(AFTERNOON);
+    var d = new Date(f + "T00:00:00");
+    return d.getDay() === 6 ? MORNING.slice() : MORNING.concat(AFTERNOON); // 6 = sábado
+  }
   function rellenarHoras() {
     var sel = document.getElementById('rHora');
-    HORAS_DISPONIBLES.forEach(function(v){
+    var fecha = document.getElementById('rFecha').value;
+    var actual = sel.value;
+    sel.innerHTML = '<option value="">Elige hora</option>';
+    horasParaFecha(fecha).forEach(function(v){
       var o = document.createElement('option');
       o.value = v; o.textContent = v;
+      if(v === actual) o.selected = true;
       sel.appendChild(o);
     });
   }
@@ -526,7 +536,10 @@ html { scroll-behavior:smooth; }
     cargarServicios();
     rellenarHoras();
     var f = document.getElementById('rFecha');
-    if (f) f.min = new Date().toISOString().split('T')[0];
+    if (f) {
+      f.min = new Date().toISOString().split('T')[0];
+      f.addEventListener('change', rellenarHoras);
+    }
   });
 </script>
 </body>
