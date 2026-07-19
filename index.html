@@ -374,7 +374,7 @@ html { scroll-behavior:smooth; }
     <div class="contacto-info">
       <div class="contacto-item"><div class="contacto-dot"></div><div><div class="contacto-label">Dirección</div><div class="contacto-value">C/ Hospital · Oropesa de Toledo</div></div></div>
       <div class="contacto-item"><div class="contacto-dot"></div><div><div class="contacto-label">Teléfono</div><div class="contacto-value">+34 925 XX XX XX</div></div></div>
-      <div class="contacto-item"><div class="contacto-dot"></div><div><div class="contacto-label">Horario</div><div class="contacto-value">Lun–Vie 9:30–19:30 · Sáb 9:30–14:00</div></div></div>
+      <div class="contacto-item"><div class="contacto-dot"></div><div><div class="contacto-label">Horario</div><div class="contacto-value">Lun–Sáb · 10:00–14:00 y 16:00–20:00</div></div></div>
       <div class="contacto-item"><div class="contacto-dot"></div><div><div class="contacto-label">Instagram</div><div class="contacto-value">@esteticacristinablanco</div></div></div>
     </div>
   </div>
@@ -464,17 +464,15 @@ html { scroll-behavior:smooth; }
     if (match) select.value = match.id;
   }
 
-  // ===== Horas disponibles =====
+  // ===== Horas disponibles (citas de 1h; cierre de mediodía 14:00-16:00) =====
+  var HORAS_DISPONIBLES = ["10:00","11:00","12:00","13:00","16:00","17:00","18:00","19:00"];
   function rellenarHoras() {
     var sel = document.getElementById('rHora');
-    for (var h=10; h<=19; h++) {
-      ['00','30'].forEach(function(m){
-        var o = document.createElement('option');
-        o.value = (h<10?'0'+h:h) + ':' + m;
-        o.textContent = o.value;
-        sel.appendChild(o);
-      });
-    }
+    HORAS_DISPONIBLES.forEach(function(v){
+      var o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
   }
 
   function mostrarEstado(msg, ok) {

@@ -91,6 +91,16 @@
   .slot.ocupado{background:var(--cream);border-color:var(--rose)}
   .slot.bloqueado{opacity:.65}
   .slot.bloqueado .det{color:#8a7565;font-size:.9rem}
+  /* Vista semana */
+  .wday{background:var(--white-warm);border:1px solid var(--rose);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+  .wday.hoy{border-color:var(--earth);border-width:2px}
+  .wday-head{display:flex;justify-content:space-between;align-items:center;font-family:'Playfair Display',serif;font-weight:600;margin-bottom:8px;cursor:pointer;text-transform:capitalize}
+  .wday-head .wsum{font-family:'Lato',sans-serif;font-size:.76rem;color:var(--earth);font-weight:700;text-transform:none}
+  .wchips{display:flex;flex-wrap:wrap;gap:6px}
+  .wchip{min-width:40px;text-align:center;padding:6px 4px;border-radius:8px;font-size:.8rem;font-weight:700}
+  .wchip.g{background:rgba(95,122,58,.13);color:var(--ok);border:1px dashed rgba(95,122,58,.45);cursor:pointer}
+  .wchip.o{background:var(--earth);color:#fff;cursor:pointer}
+  .wchip.b{background:#e7ded6;color:#a08b7c}
   .row2{display:flex;gap:10px;flex-wrap:wrap} .row2>div{flex:1 1 120px;min-width:0}
   .bloq{display:flex;justify-content:space-between;align-items:center;background:var(--white-warm);border:1px solid var(--rose);border-radius:12px;padding:12px 16px;margin-bottom:10px}
   .bloq .del{background:transparent;color:var(--bad);border:1px solid var(--bad);padding:5px 12px;font-size:.8rem}
@@ -143,13 +153,29 @@
 
     <!-- Agenda -->
     <div id="tab-agenda" class="hide">
-      <div class="agenda-nav">
-        <button class="chip" id="agPrev" aria-label="Día anterior">‹</button>
-        <input id="agFecha" type="date">
-        <button class="chip" id="agNext" aria-label="Día siguiente">›</button>
+      <div class="filters" id="agModo" style="justify-content:center">
+        <button class="chip active" data-modo="dia">Día</button>
+        <button class="chip" data-modo="semana">Semana</button>
       </div>
-      <div class="ag-resumen" id="agResumen"></div>
-      <div id="agSlots"></div>
+      <!-- Vista día -->
+      <div id="agVistaDia">
+        <div class="agenda-nav">
+          <button class="chip" id="agPrev" aria-label="Día anterior">‹</button>
+          <input id="agFecha" type="date">
+          <button class="chip" id="agNext" aria-label="Día siguiente">›</button>
+        </div>
+        <div class="ag-resumen" id="agResumen"></div>
+        <div id="agSlots"></div>
+      </div>
+      <!-- Vista semana -->
+      <div id="agVistaSemana" class="hide">
+        <div class="agenda-nav">
+          <button class="chip" id="wPrev" aria-label="Semana anterior">‹</button>
+          <div id="wRango" style="flex:1;text-align:center;font-weight:700;color:var(--earth-dark)"></div>
+          <button class="chip" id="wNext" aria-label="Semana siguiente">›</button>
+        </div>
+        <div id="wDias"></div>
+      </div>
     </div>
 
     <!-- Nueva cita -->
@@ -200,6 +226,8 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SB_URL = "https://gimoqpusrdltlkrwsykr.supabase.co";
 const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpbW9xcHVzcmRsdGxrcndzeWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDA0NDIsImV4cCI6MjA5Nzk3NjQ0Mn0.xmxP3TGAkXNPsrIKSYj1A-NXrIN1JIyzl9Fv6_FP8Dw";
 const NEGOCIO_ID = "54ef27b9-c15c-4b31-82df-fbe5cad71672";
+// Citas de 1h; cierre de mediodía 14:00-16:00
+const HORAS = ["10:00", "11:00", "12:00", "13:00", "16:00", "17:00", "18:00", "19:00"];
 const sb = createClient(SB_URL, SB_ANON);
 
 // Registrar service worker (necesario para instalar como app)
@@ -209,6 +237,11 @@ if ('serviceWorker' in navigator) {
 
 const $ = (id) => document.getElementById(id);
 let filtroActual = "proximas";
+
+// Fechas en horario LOCAL (evita el desfase de un día con toISOString en España)
+const pad2 = (n) => String(n).padStart(2, "0");
+const iso = (d) => d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+const hoyLocal = () => iso(new Date());
 
 // ---- Auth ----
 async function init() {
@@ -333,7 +366,7 @@ async function cargarReservas() {
   let q = sb.from("reservas")
     .select("id,fecha,hora,estado,notas,clientes(nombre,telefono),servicios(nombre)")
     .eq("negocio_id", NEGOCIO_ID);
-  const hoy = new Date().toISOString().split("T")[0];
+  const hoy = hoyLocal();
   if (filtroActual === "proximas") q = q.gte("fecha", hoy).neq("estado", "cancelada").order("fecha").order("hora");
   else if (filtroActual === "pendiente") q = q.eq("estado", "pendiente").order("fecha").order("hora");
   else if (filtroActual === "confirmada") q = q.eq("estado", "confirmada").order("fecha").order("hora");
@@ -380,19 +413,17 @@ $("listaReservas").addEventListener("click", async (e) => {
 });
 
 // ---- Agenda (huecos libres / ocupados por día) ----
-function slotsDelDia() {
-  const a = [];
-  for (let h = 10; h <= 19; h++) ["00", "30"].forEach(m => a.push((h < 10 ? "0" + h : h) + ":" + m));
-  return a;
-}
+function slotsDelDia() { return HORAS.slice(); }
 function prepararAgenda() {
-  if (!$("agFecha").value) $("agFecha").value = new Date().toISOString().split("T")[0];
-  cargarAgenda();
+  if (!$("agFecha").value) $("agFecha").value = hoyLocal();
+  const enSemana = document.querySelector('#agModo .chip[data-modo="semana"]').classList.contains("active");
+  if (enSemana) { if (!semanaRef) semanaRef = $("agFecha").value; cargarSemana(); }
+  else cargarAgenda();
 }
 function shiftDia(n) {
   const d = new Date($("agFecha").value + "T00:00:00");
   d.setDate(d.getDate() + n);
-  $("agFecha").value = d.toISOString().split("T")[0];
+  $("agFecha").value = iso(d);
   cargarAgenda();
 }
 $("agPrev").addEventListener("click", () => shiftDia(-1));
@@ -447,6 +478,93 @@ $("agSlots").addEventListener("click", async (e) => {
   $("nHora").value = hora;
 });
 
+// ---- Agenda: vista semanal ----
+let semanaRef = null;
+document.querySelectorAll("#agModo .chip").forEach(c => c.addEventListener("click", () => {
+  document.querySelectorAll("#agModo .chip").forEach(x => x.classList.remove("active"));
+  c.classList.add("active");
+  const modo = c.dataset.modo;
+  $("agVistaDia").classList.toggle("hide", modo !== "dia");
+  $("agVistaSemana").classList.toggle("hide", modo !== "semana");
+  if (modo === "semana") {
+    if (!semanaRef) semanaRef = $("agFecha").value || hoyLocal();
+    cargarSemana();
+  } else {
+    cargarAgenda();
+  }
+}));
+
+function lunesDe(fechaStr) {
+  const d = new Date(fechaStr + "T00:00:00");
+  const dow = (d.getDay() + 6) % 7; // 0 = lunes
+  d.setDate(d.getDate() - dow);
+  return d;
+}
+function shiftSemana(n) {
+  const l = lunesDe(semanaRef);
+  l.setDate(l.getDate() + n * 7);
+  semanaRef = iso(l);
+  cargarSemana();
+}
+$("wPrev").addEventListener("click", () => shiftSemana(-1));
+$("wNext").addEventListener("click", () => shiftSemana(1));
+
+const DIAS_SEM = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+function fmtCorta(d) { return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" }); }
+
+async function cargarSemana() {
+  $("wDias").innerHTML = '<div class="empty">Cargando…</div>';
+  const lunes = lunesDe(semanaRef);
+  const dias = [];
+  for (let i = 0; i < 6; i++) { const d = new Date(lunes); d.setDate(d.getDate() + i); dias.push(d); }
+  const desde = iso(dias[0]), hasta = iso(dias[dias.length - 1]);
+  $("wRango").textContent = fmtCorta(dias[0]) + " – " + fmtCorta(dias[dias.length - 1]);
+  const [resR, resB] = await Promise.all([
+    sb.from("reservas").select("fecha,hora,estado,clientes(nombre)")
+      .eq("negocio_id", NEGOCIO_ID).gte("fecha", desde).lte("fecha", hasta).neq("estado", "cancelada"),
+    sb.from("dias_bloqueados").select("fecha,hora_inicio,hora_fin")
+      .eq("negocio_id", NEGOCIO_ID).gte("fecha", desde).lte("fecha", hasta)
+  ]);
+  const reservas = resR.data || [], bloqueos = resB.data || [];
+  const hoy = hoyLocal();
+  $("wDias").innerHTML = dias.map((d, i) => {
+    const f = iso(d);
+    let libres = 0, ocup = 0;
+    const chips = HORAS.map(h => {
+      const r = reservas.find(x => x.fecha === f && (x.hora || "").slice(0, 5) === h);
+      const b = bloqueos.find(x => x.fecha === f &&
+        ((!x.hora_inicio && !x.hora_fin) ||
+         (x.hora_inicio && x.hora_fin && h >= x.hora_inicio.slice(0, 5) && h < x.hora_fin.slice(0, 5))));
+      const et = h.slice(0, 2);
+      if (r) { ocup++; const cli = (r.clientes && r.clientes.nombre) || "Cita"; return `<span class="wchip o" data-fecha="${f}" title="${esc(cli)}">${et}</span>`; }
+      if (b) return `<span class="wchip b" title="Bloqueado">${et}</span>`;
+      libres++;
+      return `<span class="wchip g" data-fecha="${f}" data-hora="${h}">${et}</span>`;
+    }).join("");
+    return `<div class="wday${f === hoy ? " hoy" : ""}">
+      <div class="wday-head" data-fecha="${f}"><span>${DIAS_SEM[i]} ${d.getDate()}</span><span class="wsum">${libres} libres · ${ocup} ocup.</span></div>
+      <div class="wchips">${chips}</div>
+    </div>`;
+  }).join("");
+}
+
+$("wDias").addEventListener("click", async (e) => {
+  const chip = e.target.closest(".wchip");
+  const head = e.target.closest(".wday-head");
+  if (chip && chip.classList.contains("g")) {
+    document.querySelector('.tab[data-tab="nueva"]').click();
+    await prepararNuevaCita();
+    $("nFecha").value = chip.dataset.fecha; $("nHora").value = chip.dataset.hora;
+    return;
+  }
+  const fecha = (chip && chip.dataset.fecha) || (head && head.dataset.fecha);
+  if (fecha) {
+    document.querySelector('#agModo .chip[data-modo="dia"]').click();
+    $("agFecha").value = fecha;
+    cargarAgenda();
+  }
+});
+
 // ---- Nueva cita (creada por la administradora) ----
 let SERVICIOS_ADMIN = [];
 async function prepararNuevaCita() {
@@ -458,12 +576,11 @@ async function prepararNuevaCita() {
   }
   const selH = $("nHora");
   if (selH.options.length <= 1) {
-    for (let h = 10; h <= 19; h++) ["00", "30"].forEach(m => {
-      const v = (h < 10 ? "0" + h : h) + ":" + m;
+    HORAS.forEach(v => {
       const o = document.createElement("option"); o.value = v; o.textContent = v; selH.appendChild(o);
     });
   }
-  $("nFecha").min = new Date().toISOString().split("T")[0];
+  $("nFecha").min = hoyLocal();
 }
 $("btnCrear").addEventListener("click", async () => {
   const msg = $("nMsg"); msg.textContent = ""; msg.className = "msg";
@@ -503,7 +620,7 @@ $("btnCrear").addEventListener("click", async () => {
 async function cargarBloqueados() {
   const cont = $("listaBloqueados");
   cont.innerHTML = '<div class="empty">Cargando…</div>';
-  const hoy = new Date().toISOString().split("T")[0];
+  const hoy = hoyLocal();
   const { data, error } = await sb.from("dias_bloqueados")
     .select("id,fecha,motivo").eq("negocio_id", NEGOCIO_ID).gte("fecha", hoy).order("fecha");
   if (error) { cont.innerHTML = '<div class="empty">Error: ' + error.message + '</div>'; return; }
