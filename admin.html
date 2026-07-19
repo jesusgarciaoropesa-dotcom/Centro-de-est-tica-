@@ -107,6 +107,7 @@
   <div class="wrap">
     <div class="tabs">
       <button class="tab active" data-tab="reservas">Reservas</button>
+      <button class="tab" data-tab="nueva">+ Nueva cita</button>
       <button class="tab" data-tab="bloqueados">Días bloqueados</button>
     </div>
 
@@ -119,6 +120,32 @@
         <button class="chip" data-f="todas">Todas</button>
       </div>
       <div id="listaReservas"><div class="empty">Cargando…</div></div>
+    </div>
+
+    <!-- Nueva cita -->
+    <div id="tab-nueva" class="hide">
+      <div class="card">
+        <h3 style="margin-bottom:14px;font-size:1.15rem">Crear una cita</h3>
+        <label>Nombre de la clienta</label>
+        <input id="nNombre" type="text" placeholder="Nombre">
+        <label>Teléfono</label>
+        <input id="nTelefono" type="tel" placeholder="6XX XXX XXX">
+        <label>Tratamiento</label>
+        <select id="nServicio"><option value="">Elige tratamiento</option></select>
+        <div class="row2">
+          <div><label>Día</label><input id="nFecha" type="date"></div>
+          <div><label>Hora</label><select id="nHora"><option value="">Hora</option></select></div>
+        </div>
+        <label>Estado</label>
+        <select id="nEstado">
+          <option value="confirmada">Confirmada</option>
+          <option value="pendiente">Pendiente</option>
+        </select>
+        <label>Notas (opcional)</label>
+        <input id="nNotas" type="text" placeholder="Observaciones">
+        <button class="btn" id="btnCrear">Crear cita</button>
+        <div class="msg" id="nMsg"></div>
+      </div>
     </div>
 
     <!-- Bloqueados -->
@@ -253,8 +280,10 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   t.classList.add("active");
   const tab = t.dataset.tab;
   $("tab-reservas").classList.toggle("hide", tab !== "reservas");
+  $("tab-nueva").classList.toggle("hide", tab !== "nueva");
   $("tab-bloqueados").classList.toggle("hide", tab !== "bloqueados");
   if (tab === "bloqueados") cargarBloqueados();
+  if (tab === "nueva") prepararNuevaCita();
 }));
 
 // ---- Filtros ----
@@ -316,6 +345,58 @@ $("listaReservas").addEventListener("click", async (e) => {
   const { error } = await sb.from("reservas").update({ estado: btn.dataset.act }).eq("id", btn.dataset.id);
   if (error) { alert("No se pudo actualizar: " + error.message); btn.disabled = false; return; }
   cargarReservas();
+});
+
+// ---- Nueva cita (creada por la administradora) ----
+let SERVICIOS_ADMIN = [];
+async function prepararNuevaCita() {
+  if (!SERVICIOS_ADMIN.length) {
+    const { data } = await sb.from("servicios").select("id,nombre").eq("negocio_id", NEGOCIO_ID).order("nombre");
+    SERVICIOS_ADMIN = data || [];
+    const sel = $("nServicio");
+    SERVICIOS_ADMIN.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.nombre; sel.appendChild(o); });
+  }
+  const selH = $("nHora");
+  if (selH.options.length <= 1) {
+    for (let h = 10; h <= 19; h++) ["00", "30"].forEach(m => {
+      const v = (h < 10 ? "0" + h : h) + ":" + m;
+      const o = document.createElement("option"); o.value = v; o.textContent = v; selH.appendChild(o);
+    });
+  }
+  $("nFecha").min = new Date().toISOString().split("T")[0];
+}
+$("btnCrear").addEventListener("click", async () => {
+  const msg = $("nMsg"); msg.textContent = ""; msg.className = "msg";
+  const nombre = $("nNombre").value.trim(), telefono = $("nTelefono").value.trim();
+  const servicio_id = $("nServicio").value, fecha = $("nFecha").value, hora = $("nHora").value;
+  const estado = $("nEstado").value, notas = $("nNotas").value.trim();
+  if (!nombre || !telefono || !servicio_id || !fecha || !hora) {
+    msg.textContent = "Completa nombre, teléfono, tratamiento, día y hora."; msg.className = "msg err"; return;
+  }
+  $("btnCrear").disabled = true;
+  try {
+    let clienteId;
+    const { data: cli } = await sb.from("clientes").select("id").eq("negocio_id", NEGOCIO_ID).eq("telefono", telefono).limit(1);
+    if (cli && cli.length) {
+      clienteId = cli[0].id;
+      await sb.from("clientes").update({ nombre }).eq("id", clienteId);
+    } else {
+      const { data: nu, error: e1 } = await sb.from("clientes").insert({ negocio_id: NEGOCIO_ID, telefono, nombre }).select("id").single();
+      if (e1) throw e1; clienteId = nu.id;
+    }
+    const { error: e2 } = await sb.from("reservas").insert({
+      negocio_id: NEGOCIO_ID, cliente_id: clienteId, servicio_id, fecha, hora, estado, notas: notas || null
+    });
+    if (e2) throw e2;
+    msg.textContent = "¡Cita creada correctamente!"; msg.className = "msg ok";
+    ["nNombre", "nTelefono", "nNotas"].forEach(id => $(id).value = "");
+    $("nServicio").value = ""; $("nHora").value = "";
+    if (lastSeen) lastSeen = new Date().toISOString(); // evita auto-aviso de la cita que acabo de crear
+  } catch (err) {
+    msg.textContent = "Error: " + (err.message || err); msg.className = "msg err";
+  } finally {
+    $("btnCrear").disabled = false;
+  }
 });
 
 // ---- Días bloqueados ----
