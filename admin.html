@@ -146,6 +146,7 @@
       <button class="tab active" data-tab="reservas">Reservas</button>
       <button class="tab" data-tab="agenda">Agenda</button>
       <button class="tab" data-tab="nueva">+ Nueva cita</button>
+      <button class="tab" data-tab="servicios">Servicios</button>
       <button class="tab" data-tab="bloqueados">Días bloqueados</button>
     </div>
 
@@ -210,6 +211,23 @@
         <input id="nNotas" type="text" placeholder="Observaciones">
         <button class="btn" id="btnCrear">Crear cita</button>
         <div class="msg" id="nMsg"></div>
+      </div>
+    </div>
+
+    <!-- Servicios -->
+    <div id="tab-servicios" class="hide">
+      <p style="color:var(--earth);font-size:.88rem;margin-bottom:14px">Edita el precio y la duración de cada tratamiento. El precio se refleja en tu web al instante.</p>
+      <div id="listaServicios"><div class="empty">Cargando…</div></div>
+      <div class="card" style="margin-top:8px">
+        <h3 style="margin-bottom:10px;font-size:1.05rem">Añadir servicio</h3>
+        <label>Nombre</label>
+        <input id="svNombre" type="text" placeholder="Nombre del tratamiento">
+        <div class="row2">
+          <div><label>Precio desde (€)</label><input id="svPrecio" type="number" min="0" placeholder="0"></div>
+          <div><label>Duración (min)</label><input id="svDur" type="number" min="5" step="5" placeholder="60"></div>
+        </div>
+        <button class="btn" id="btnAddServicio">Añadir servicio</button>
+        <div class="msg" id="svMsg"></div>
       </div>
     </div>
 
@@ -397,10 +415,12 @@ document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () =>
   $("tab-reservas").classList.toggle("hide", tab !== "reservas");
   $("tab-agenda").classList.toggle("hide", tab !== "agenda");
   $("tab-nueva").classList.toggle("hide", tab !== "nueva");
+  $("tab-servicios").classList.toggle("hide", tab !== "servicios");
   $("tab-bloqueados").classList.toggle("hide", tab !== "bloqueados");
   if (tab === "bloqueados") cargarBloqueados();
   if (tab === "nueva") prepararNuevaCita();
   if (tab === "agenda") prepararAgenda();
+  if (tab === "servicios") cargarServiciosAdmin();
 }));
 
 // ---- Filtros ----
@@ -679,6 +699,84 @@ $("btnCrear").addEventListener("click", async () => {
   } finally {
     $("btnCrear").disabled = false;
   }
+});
+
+// ---- Servicios (editar precio / duración, añadir, eliminar) ----
+function rebuildNservicioSelect() {
+  const nsel = $("nServicio"); if (!nsel) return;
+  const val = nsel.value;
+  nsel.innerHTML = '<option value="">Elige tratamiento</option>';
+  SERVICIOS_ADMIN.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.nombre; nsel.appendChild(o); });
+  nsel.value = val;
+}
+async function cargarServiciosAdmin() {
+  const cont = $("listaServicios");
+  cont.innerHTML = '<div class="empty">Cargando…</div>';
+  const { data, error } = await sb.from("servicios")
+    .select("id,nombre,precio_desde,duracion_minutos").eq("negocio_id", NEGOCIO_ID).order("nombre");
+  if (error) { cont.innerHTML = '<div class="empty">Error: ' + error.message + '</div>'; return; }
+  SERVICIOS_ADMIN = data || [];
+  rebuildNservicioSelect();
+  if (!SERVICIOS_ADMIN.length) { cont.innerHTML = '<div class="empty">Aún no hay servicios.</div>'; return; }
+  cont.innerHTML = SERVICIOS_ADMIN.map(s => `
+    <div class="card srv-row" data-id="${s.id}" style="margin-bottom:10px;padding:16px">
+      <input class="srv-nombre" type="text" value="${esc(s.nombre)}" style="font-weight:700">
+      <div class="row2" style="margin-top:8px">
+        <div><label>Precio desde (€)</label><input class="srv-precio" type="number" min="0" value="${s.precio_desde}"></div>
+        <div><label>Duración (min)</label><input class="srv-dur" type="number" min="5" step="5" value="${s.duracion_minutos}"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn srv-save" style="margin-top:0;flex:1">Guardar</button>
+        <button class="btn-del srv-del" style="margin-top:0;width:auto;flex:0 0 auto;padding:11px 16px">Eliminar</button>
+      </div>
+      <div class="msg srv-rowmsg" style="margin-top:8px"></div>
+    </div>`).join("");
+}
+
+$("listaServicios").addEventListener("click", async (e) => {
+  const row = e.target.closest(".srv-row");
+  if (!row) return;
+  const id = row.dataset.id;
+  const msg = row.querySelector(".srv-rowmsg");
+  msg.textContent = ""; msg.className = "msg srv-rowmsg";
+  if (e.target.closest(".srv-save")) {
+    const nombre = row.querySelector(".srv-nombre").value.trim();
+    const precio = parseInt(row.querySelector(".srv-precio").value, 10);
+    const dur = parseInt(row.querySelector(".srv-dur").value, 10);
+    if (!nombre || isNaN(precio) || isNaN(dur)) { msg.textContent = "Revisa los datos."; msg.className = "msg srv-rowmsg err"; return; }
+    const btn = e.target.closest(".srv-save"); btn.disabled = true;
+    const { error } = await sb.from("servicios").update({ nombre, precio_desde: precio, duracion_minutos: dur }).eq("id", id);
+    btn.disabled = false;
+    if (error) { msg.textContent = "Error: " + error.message; msg.className = "msg srv-rowmsg err"; return; }
+    const item = SERVICIOS_ADMIN.find(x => x.id === id);
+    if (item) { item.nombre = nombre; item.precio_desde = precio; item.duracion_minutos = dur; }
+    rebuildNservicioSelect();
+    msg.textContent = "Guardado ✓"; msg.className = "msg srv-rowmsg ok";
+  } else if (e.target.closest(".srv-del")) {
+    if (!confirm("¿Eliminar este servicio? No es posible si tiene citas asociadas.")) return;
+    const { error } = await sb.from("servicios").delete().eq("id", id);
+    if (error) {
+      msg.textContent = (error.code === "23503" || /foreign key/i.test(error.message))
+        ? "No se puede: tiene citas asociadas." : ("Error: " + error.message);
+      msg.className = "msg srv-rowmsg err"; return;
+    }
+    cargarServiciosAdmin();
+  }
+});
+
+$("btnAddServicio").addEventListener("click", async () => {
+  const msg = $("svMsg"); msg.textContent = ""; msg.className = "msg";
+  const nombre = $("svNombre").value.trim();
+  const precio = parseInt($("svPrecio").value, 10);
+  const dur = parseInt($("svDur").value, 10);
+  if (!nombre) { msg.textContent = "Pon un nombre."; msg.className = "msg err"; return; }
+  const { error } = await sb.from("servicios").insert({
+    negocio_id: NEGOCIO_ID, nombre, precio_desde: isNaN(precio) ? 0 : precio, duracion_minutos: isNaN(dur) ? 60 : dur
+  });
+  if (error) { msg.textContent = "Error: " + error.message; msg.className = "msg err"; return; }
+  $("svNombre").value = ""; $("svPrecio").value = ""; $("svDur").value = "";
+  msg.textContent = "Servicio añadido ✓"; msg.className = "msg ok";
+  cargarServiciosAdmin();
 });
 
 // ---- Ver / editar una reserva ----

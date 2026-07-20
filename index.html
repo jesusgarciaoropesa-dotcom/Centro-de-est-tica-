@@ -323,14 +323,7 @@ html { scroll-behavior:smooth; }
     <h2 class="section-title">Todo lo que tu piel <em>necesita</em></h2>
     <svg style="margin:1rem auto 0;display:block" width="60" height="3" viewBox="0 0 60 3"><rect width="60" height="3" rx="1.5" fill="#C4A08A"/></svg>
   </div>
-  <div class="servicios-grid">
-    <div class="servicio-card"><span class="servicio-tag">Facial</span><div class="servicio-name">Dermoestetica facial</div><p class="servicio-desc">Tratamientos especializados para pieles con necesidades concretas: acné, manchas, rosácea, pérdida de firmeza. Diagnóstico previo incluido.</p><div class="servicio-price">Consultar precio</div><button class="servicio-btn" onclick="openModal(event, 'Dermoestetica facial')">Reservar →</button></div>
-    <div class="servicio-card"><span class="servicio-tag">Diagnóstico</span><div class="servicio-name">Análisis de piel</div><p class="servicio-desc">Estudio completo del estado de tu piel con tecnología de imagen. Hidratación, elasticidad, poros, manchas. La base para cualquier tratamiento.</p><div class="servicio-price">Incluido en tratamiento</div><button class="servicio-btn" onclick="openModal(event, 'Análisis de piel')">Reservar →</button></div>
-    <div class="servicio-card"><span class="servicio-tag">Avanzado</span><div class="servicio-name">Estética avanzada</div><p class="servicio-desc">Con Tactum Pro: radiofrecuencia, electroestimulación, reafirmación corporal y facial. Resultados visibles con tecnología de última generación.</p><div class="servicio-price">Desde 55 €</div><button class="servicio-btn" onclick="openModal(event, 'Estética avanzada (Tactum Pro)')">Reservar →</button></div>
-    <div class="servicio-card"><span class="servicio-tag">Depilación</span><div class="servicio-name">Láser y cera</div><p class="servicio-desc">Depilación láser para resultados duraderos, o cera templada y fría para todas las zonas. Piel suave con el mínimo de molestia.</p><div class="servicio-price">Desde 8 €</div><button class="servicio-btn" onclick="openModal(event, 'Depilación láser')">Reservar →</button></div>
-    <div class="servicio-card"><span class="servicio-tag">Uñas</span><div class="servicio-name">Manicura y pedicura</div><p class="servicio-desc">Uñas cuidadas al detalle. Semipermanente, gel, decoración o acabado natural. Manos y pies que se notan.</p><div class="servicio-price">Desde 18 €</div><button class="servicio-btn" onclick="openModal(event, 'Manicura / pedicura')">Reservar →</button></div>
-    <div class="servicio-card"><span class="servicio-tag">Make up</span><div class="servicio-name">Maquillaje profesional</div><p class="servicio-desc">Maquillaje para bodas, eventos o cualquier ocasión especial. Técnica profesional adaptada a tu estilo y tipo de piel.</p><div class="servicio-price">Consultar precio</div><button class="servicio-btn" onclick="openModal(event, 'Maquillaje profesional')">Reservar →</button></div>
-  </div>
+  <div class="servicios-grid" id="serviciosGrid"></div>
 </section>
 
 <!-- SOBRE -->
@@ -439,6 +432,43 @@ html { scroll-behavior:smooth; }
   // ===== Cargar servicios desde Supabase =====
   var SERVICIOS = [];
   function normaliza(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+  // Texto de marketing (etiqueta + descripción) por servicio. El nombre y el precio salen de la BD.
+  var SERVICIO_META = {
+    "Dermoestética": { tag:"Facial", desc:"Tratamientos faciales y corporales para el cuidado profundo y la salud de tu piel.", orden:1 },
+    "Estética avanzada (Tactum Pro)": { tag:"Avanzado", desc:"Con el aparato Tactum Pro: radiofrecuencia y remodelación para firmeza y tono, con resultados visibles.", orden:2 },
+    "Análisis de piel": { tag:"Diagnóstico", desc:"Estudio personalizado del estado de tu piel. La base para diseñar el tratamiento que necesitas.", orden:3 },
+    "Depilación láser": { tag:"Depilación", desc:"Depilación láser para resultados duraderos, con un método seguro, eficaz y cómodo.", orden:4 },
+    "Uñas (manicura/pedicura)": { tag:"Uñas", desc:"Manicura y pedicura cuidadas al detalle: semipermanente, gel o acabado natural.", orden:5 },
+    "Maquillaje": { tag:"Make up", desc:"Maquillaje profesional para eventos, celebraciones o para brillar cada día.", orden:6 }
+  };
+  function precioTexto(p){
+    if (p === null || p === undefined || Number(p) === 0) return "Consultar precio";
+    return "Desde " + p + " €";
+  }
+  function renderTarjetasServicios(){
+    var grid = document.getElementById('serviciosGrid');
+    if (!grid) return;
+    var lista = SERVICIOS.slice().sort(function(a,b){
+      return ((SERVICIO_META[a.nombre]||{}).orden || 99) - ((SERVICIO_META[b.nombre]||{}).orden || 99);
+    });
+    grid.innerHTML = '';
+    lista.forEach(function(s){
+      var meta = SERVICIO_META[s.nombre] || { tag:"Servicio", desc:"" };
+      var card = document.createElement('div');
+      card.className = 'servicio-card';
+      card.innerHTML =
+        '<span class="servicio-tag">' + meta.tag + '</span>' +
+        '<div class="servicio-name">' + s.nombre + '</div>' +
+        '<p class="servicio-desc">' + meta.desc + '</p>' +
+        '<div class="servicio-price">' + precioTexto(s.precio_desde) + '</div>' +
+        '<button class="servicio-btn">Reservar →</button>';
+      card.querySelector('.servicio-btn').addEventListener('click', function(e){
+        openModal(e);
+        document.getElementById('modalTreatment').value = s.id;
+      });
+      grid.appendChild(card);
+    });
+  }
   async function cargarServicios() {
     var select = document.getElementById('modalTreatment');
     try {
@@ -450,6 +480,7 @@ html { scroll-behavior:smooth; }
         o.value = s.id; o.textContent = s.nombre;
         select.appendChild(o);
       });
+      renderTarjetasServicios();
     } catch (err) { console.error('No se pudieron cargar los servicios', err); }
   }
   function preseleccionarTratamiento(nombre) {
